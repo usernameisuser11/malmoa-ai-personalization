@@ -34,6 +34,12 @@ public class GeminiClient {
         return model;
     }
 
+    public boolean probe() {
+        if (!isConfigured()) return false;
+        List<String> result = generateSentences("연결 점검이다. 정확히 JSON {\"sentences\":[\"연결 성공\"]}만 반환해.");
+        return !result.isEmpty();
+    }
+
     public List<String> generateSentences(String prompt) {
         if (!isConfigured()) return List.of();
         Map<String, Object> body = Map.of(
