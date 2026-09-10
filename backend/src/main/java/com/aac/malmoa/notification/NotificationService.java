@@ -1,9 +1,11 @@
 package com.aac.malmoa.notification;
 
 import com.aac.malmoa.domain.AacSymbol;
+import com.aac.malmoa.domain.AacUserSettings;
 import com.aac.malmoa.domain.GuardianNotification;
 import com.aac.malmoa.domain.UserSymbolCustomization;
 import com.aac.malmoa.repository.AacSymbolRepository;
+import com.aac.malmoa.repository.AacUserSettingsRepository;
 import com.aac.malmoa.repository.GuardianNotificationRepository;
 import com.aac.malmoa.repository.UserSymbolCustomizationRepository;
 import org.springframework.stereotype.Service;
@@ -16,13 +18,16 @@ public class NotificationService {
     private final AacSymbolRepository symbolRepository;
     private final UserSymbolCustomizationRepository customizationRepository;
     private final GuardianNotificationRepository notificationRepository;
+    private final AacUserSettingsRepository userSettingsRepository;
 
     public NotificationService(AacSymbolRepository symbolRepository,
                                UserSymbolCustomizationRepository customizationRepository,
-                               GuardianNotificationRepository notificationRepository) {
+                               GuardianNotificationRepository notificationRepository,
+                               AacUserSettingsRepository userSettingsRepository) {
         this.symbolRepository = symbolRepository;
         this.customizationRepository = customizationRepository;
         this.notificationRepository = notificationRepository;
+        this.userSettingsRepository = userSettingsRepository;
     }
 
     @Transactional
@@ -37,8 +42,9 @@ public class NotificationService {
                     || (custom != null && normalized.equals(custom.getUserAlias()));
             if (match) {
                 String shown = custom != null && custom.getDisplayText() != null ? custom.getDisplayText() : symbol.getCanonicalText();
-                String message = "사용자님이 긴급 상징 \"" + shown + "\"을(를) 사용했습니다.";
-                notificationRepository.save(new GuardianNotification(userId, "사용자", message));
+                String userName = userSettingsRepository.findById(userId).map(AacUserSettings::getName).orElse("사용자");
+                String message = userName + "님이 긴급 상징 \"" + shown + "\"을(를) 사용했습니다.";
+                notificationRepository.save(new GuardianNotification(userId, userName, message));
                 return;
             }
         }

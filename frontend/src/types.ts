@@ -1,3 +1,4 @@
+export type UserSettings={userId:number;name:string;birthDate:string|null;relationshipType:string|null;emergencyContact:string|null;gridSize:'GRID_2X2'|'GRID_3X3'|'GRID_4X4';voiceType:'CHILD_MALE'|'CHILD_FEMALE';speechRate:number};
 export type CommunicationProfile={userId:number;age:number|null;receptiveMaxEojeol:number;expressiveMaxEojeol:number;vocabularyLevel:string;allowAbstractLanguage:boolean;allowCausalExpression:boolean;notes:string|null};
 export type AacSymbol={id:number;assetName:string;category:string;canonicalText:string;displayText:string;ttsText:string;userAlias:string|null;imageUrl:string|null;colorHex:string;emergency:boolean;favorite:boolean;importantWord:boolean;sortOrder:number|null};
 export type GuardianNotification={id:number;aacUserId:number;aacUserName:string;message:string;read:boolean;createdAt:string};

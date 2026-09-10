@@ -1,8 +1,10 @@
-import type { AacSymbol, CommunicationProfile, Comparison, GuardianNotification, RecommendationStats } from '@/types';
+import type { AacSymbol,CommunicationProfile,Comparison,GuardianNotification,RecommendationStats,UserSettings } from '@/types';
 
 const BASE=process.env.NEXT_PUBLIC_API_BASE_URL??'http://localhost:8080';
 async function request<T>(path:string,init?:RequestInit):Promise<T>{const response=await fetch(`${BASE}${path}`,{...init,headers:{'Content-Type':'application/json',...(init?.headers??{})}});const text=await response.text();if(!response.ok)throw new Error(text||`API ${response.status}`);if(!text)return undefined as T;return JSON.parse(text) as T;}
 export const api={
+  getUserSettings:(userId:number)=>request<UserSettings>(`/api/users/${userId}/settings`),
+  saveUserSettings:(userId:number,settings:Omit<UserSettings,'userId'>)=>request<UserSettings>(`/api/users/${userId}/settings`,{method:'PUT',body:JSON.stringify(settings)}),
   getProfile:(userId:number)=>request<CommunicationProfile>(`/api/users/${userId}/communication-profile`),
   saveProfile:(userId:number,profile:Omit<CommunicationProfile,'userId'>)=>request<CommunicationProfile>(`/api/users/${userId}/communication-profile`,{method:'PUT',body:JSON.stringify(profile)}),
   getSymbols:(userId:number)=>request<AacSymbol[]>(`/api/users/${userId}/symbols`),
