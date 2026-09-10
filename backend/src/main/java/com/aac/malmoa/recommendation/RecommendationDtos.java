@@ -17,7 +17,7 @@ public final class RecommendationDtos {
     public record Candidate(String sentence, int eojeolCount, int personalWordCount,
                             boolean valid, List<String> violations) {}
 
-    public record Result(Long userId, String mode, String situation, List<String> personalWords,
+    public record Result(Long userId, String mode, String source, String situation, List<String> personalWords,
                          Integer maxEojeol, List<Candidate> candidates) {}
 
     public record Comparison(Result baseline, Result personalized) {}

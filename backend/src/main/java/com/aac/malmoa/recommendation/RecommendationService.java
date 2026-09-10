@@ -39,12 +39,14 @@ public class RecommendationService {
         CommunicationProfile profile = profileRepository.findByUserId(request.userId())
                 .orElseGet(() -> profileRepository.save(new CommunicationProfile(request.userId())));
         List<String> personalWords = personalWords(request.userId());
+
         List<String> generated = gemini.generateSentences(personalizedPrompt(request, profile, personalWords));
+        boolean finalFromGemini = !generated.isEmpty();
         if (generated.isEmpty()) generated = fallback(request, profile.getExpressiveMaxEojeol());
         List<Candidate> candidates = evaluate(generated, profile.getExpressiveMaxEojeol(), personalWords);
 
         long validCount = candidates.stream().filter(Candidate::valid).count();
-        if (validCount < 3 && !generated.isEmpty()) {
+        if (validCount < 3 && finalFromGemini) {
             List<String> repaired = gemini.generateSentences(repairPrompt(request, profile, personalWords, candidates));
             if (!repaired.isEmpty()) {
                 List<String> merged = new ArrayList<>();
@@ -53,12 +55,14 @@ public class RecommendationService {
                 candidates = evaluate(merged, profile.getExpressiveMaxEojeol(), personalWords);
             }
         }
-        if (candidates.stream().filter(Candidate::valid).count() < 1) {
+        if (candidates.stream().noneMatch(Candidate::valid)) {
             candidates = evaluate(fallback(request, profile.getExpressiveMaxEojeol()), profile.getExpressiveMaxEojeol(), personalWords);
+            finalFromGemini = false;
         }
+
         saveHistory(request, candidates, "personalized");
-        return new Result(request.userId(), "personalized", request.situation(), personalWords,
-                profile.getExpressiveMaxEojeol(), candidates);
+        return new Result(request.userId(), "personalized", finalFromGemini ? "gemini" : "fallback",
+                request.situation(), personalWords, profile.getExpressiveMaxEojeol(), candidates);
     }
 
     @Transactional
@@ -68,10 +72,12 @@ public class RecommendationService {
                 ". 선택한 단어: " + String.join(", ", safeWords(request.selectedWords())) +
                 ". 사용자가 선택하지 않은 새로운 의도나 사실은 추가하지 마. JSON {\"sentences\":[\"...\"]} 형식으로만 답해.";
         List<String> generated = gemini.generateSentences(prompt);
+        boolean fromGemini = !generated.isEmpty();
         if (generated.isEmpty()) generated = fallback(request, 20);
         List<Candidate> candidates = evaluate(generated, 100, List.of());
         saveHistory(request, candidates, "baseline");
-        return new Result(request.userId(), "baseline", request.situation(), List.of(), null, candidates);
+        return new Result(request.userId(), "baseline", fromGemini ? "gemini" : "fallback",
+                request.situation(), List.of(), null, candidates);
     }
 
     @Transactional
@@ -138,7 +144,8 @@ public class RecommendationService {
             if (c.getDisplayText() != null) words.add(c.getDisplayText());
             words.add(c.getSymbol().getCanonicalText());
         });
-        usageRepository.findTop20ByUserIdOrderByUsageCountDescLastUsedAtDesc(userId).forEach(u -> words.add(u.getWord()));
+        usageRepository.findTop20ByUserIdOrderByUsageCountDescLastUsedAtDesc(userId)
+                .forEach(u -> words.add(u.getWord()));
         return words.stream().limit(30).toList();
     }
 
@@ -147,8 +154,9 @@ public class RecommendationService {
             int eojeol = eojeolCount(sentence);
             List<String> violations = new ArrayList<>();
             if (eojeol > maxEojeol) violations.add("MAX_EOJEOL_EXCEEDED");
+            if (containsMultipleSentences(sentence)) violations.add("MULTIPLE_SENTENCES");
             int personalCount = (int) personalWords.stream().filter(sentence::contains).distinct().count();
-            return new Candidate(sentence, eojeol, personalCount, violations.isEmpty(), violations);
+            return new Candidate(sentence, eojeol, personalCount, violations.isEmpty(), List.copyOf(violations));
         }).sorted(Comparator.comparing(Candidate::valid).reversed()
                 .thenComparing(Candidate::personalWordCount, Comparator.reverseOrder())
                 .thenComparing(Candidate::eojeolCount)).limit(3).toList();
@@ -168,9 +176,34 @@ public class RecommendationService {
         if (raw.isEmpty()) raw.add("도와주세요");
         return raw.stream().map(s -> trimToEojeol(s, maxEojeol)).map(this::normalize).distinct().limit(3).toList();
     }
-    private String trimToEojeol(String value, int max) { String[] parts=value.trim().split("\\s+"); return String.join(" ", Arrays.copyOf(parts, Math.min(parts.length, Math.max(1,max)))); }
-    private int eojeolCount(String value) { return value.isBlank()?0:value.trim().split("\\s+").length; }
-    private String normalize(String value) { String s=value==null?"":value.trim().replaceAll("^[\\-•\\d.\\s]+",""); if(!s.isBlank()&&!s.matches(".*[.!?요다까]$"))s+="."; return s; }
-    private String safe(String value) { return value==null||value.isBlank()?"미지정":value.trim(); }
-    private List<String> safeWords(List<String> words) { return words==null?List.of():words.stream().filter(Objects::nonNull).map(String::trim).filter(s->!s.isBlank()).limit(3).toList(); }
+
+    private boolean containsMultipleSentences(String value) {
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) return false;
+        String withoutFinalPunctuation = trimmed.replaceFirst("[.!?]+$", "");
+        return withoutFinalPunctuation.matches(".*[.!?].*");
+    }
+
+    private String trimToEojeol(String value, int max) {
+        String[] parts = value.trim().split("\\s+");
+        return String.join(" ", Arrays.copyOf(parts, Math.min(parts.length, Math.max(1, max))));
+    }
+
+    private int eojeolCount(String value) {
+        return value.isBlank() ? 0 : value.trim().split("\\s+").length;
+    }
+
+    private String normalize(String value) {
+        String sentence = value == null ? "" : value.trim().replaceAll("^[\\-•\\d.\\s]+", "");
+        if (!sentence.isBlank() && !sentence.matches(".*[.!?요다까]$")) sentence += ".";
+        return sentence;
+    }
+
+    private String safe(String value) {
+        return value == null || value.isBlank() ? "미지정" : value.trim();
+    }
+
+    private List<String> safeWords(List<String> words) {
+        return words == null ? List.of() : words.stream().filter(Objects::nonNull).map(String::trim).filter(s -> !s.isBlank()).limit(3).toList();
+    }
 }
