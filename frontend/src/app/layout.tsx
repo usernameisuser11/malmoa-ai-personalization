@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './result-status.css';
 
 export const metadata: Metadata = {
   title: '말모아 AI 개인화 테스트',
