@@ -35,5 +35,12 @@ public class RecommendationHistory {
         this.personalWordCount = personalWordCount;
     }
     public Long getId() { return id; }
+    public Long getUserId() { return userId; }
+    public String getSituation() { return situation; }
+    public String getGeneratedSentence() { return generatedSentence; }
+    public int getEojeolCount() { return eojeolCount; }
+    public int getPersonalWordCount() { return personalWordCount; }
+    public boolean isSelected() { return selected; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
     public void markSelected() { this.selected = true; }
 }

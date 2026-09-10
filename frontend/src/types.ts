@@ -25,30 +25,8 @@ export type AacSymbol = {
   sortOrder: number | null;
 };
 
-export type GuardianNotification = {
-  id: number;
-  aacUserId: number;
-  aacUserName: string;
-  message: string;
-  read: boolean;
-  createdAt: string;
-};
-
-export type Candidate = {
-  sentence: string;
-  eojeolCount: number;
-  personalWordCount: number;
-  valid: boolean;
-  violations: string[];
-};
-
-export type RecommendationResult = {
-  userId: number;
-  mode: 'baseline' | 'personalized';
-  situation: string;
-  personalWords: string[];
-  maxEojeol: number | null;
-  candidates: Candidate[];
-};
-
-export type Comparison = { baseline: RecommendationResult; personalized: RecommendationResult };
+export type GuardianNotification = { id:number; aacUserId:number; aacUserName:string; message:string; read:boolean; createdAt:string };
+export type Candidate = { sentence:string; eojeolCount:number; personalWordCount:number; valid:boolean; violations:string[] };
+export type RecommendationResult = { userId:number; mode:'baseline'|'personalized'; situation:string; personalWords:string[]; maxEojeol:number|null; candidates:Candidate[] };
+export type Comparison = { baseline:RecommendationResult; personalized:RecommendationResult };
+export type RecommendationStats = { generatedCount:number; selectedCount:number; selectionRate:number; averageEojeol:number; averagePersonalWordCount:number };
