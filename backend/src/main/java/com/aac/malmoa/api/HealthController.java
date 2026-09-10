@@ -39,6 +39,18 @@ public class HealthController {
         return ResponseEntity.status(databaseReady ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE).body(result);
     }
 
+    @GetMapping("/health/gemini")
+    public ResponseEntity<Map<String, Object>> gemini() {
+        boolean configured = geminiClient.isConfigured();
+        boolean reachable = configured && geminiClient.probe();
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("configured", configured);
+        result.put("reachable", reachable);
+        result.put("model", geminiClient.model());
+        result.put("status", reachable ? "ok" : configured ? "unreachable" : "not_configured");
+        return ResponseEntity.status(reachable ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE).body(result);
+    }
+
     private boolean databaseReady() {
         try {
             Integer value = jdbcTemplate.queryForObject("SELECT 1", Integer.class);
