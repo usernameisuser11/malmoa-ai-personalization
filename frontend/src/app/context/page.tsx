@@ -12,7 +12,7 @@ export default function ContextPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  async function load(rawUserId: string) {
+  async function load(rawUserId: string, syncUrl = false) {
     const userId = Number(rawUserId);
     if (!Number.isInteger(userId) || userId <= 0) {
       setError('사용자 ID는 1 이상의 정수여야 합니다.');
@@ -23,6 +23,7 @@ export default function ContextPage() {
     try {
       setContext(await api.personalizationContext(userId));
       setUserInput(String(userId));
+      if (syncUrl) window.history.replaceState(null, '', `/context?userId=${userId}`);
     } catch (e) {
       setContext(null);
       setError(e instanceof Error ? e.message : '개인화 컨텍스트를 불러오지 못했습니다.');
@@ -31,7 +32,11 @@ export default function ContextPage() {
     }
   }
 
-  useEffect(() => { void load('1'); }, []);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requested = params.get('userId') ?? '1';
+    void load(requested);
+  }, []);
 
   return (
     <div className="shell">
@@ -47,9 +52,9 @@ export default function ContextPage() {
         <section className="panel context-toolbar">
           <div className="field context-user-field">
             <label htmlFor="context-user-id">AAC 사용자 ID</label>
-            <input id="context-user-id" inputMode="numeric" value={userInput} onChange={event => setUserInput(event.target.value.replace(/[^0-9]/g, ''))} onKeyDown={event => { if (event.key === 'Enter') void load(userInput); }}/>
+            <input id="context-user-id" inputMode="numeric" value={userInput} onChange={event => setUserInput(event.target.value.replace(/[^0-9]/g, ''))} onKeyDown={event => { if (event.key === 'Enter') void load(userInput, true); }}/>
           </div>
-          <button className="primary" disabled={loading} onClick={() => void load(userInput)}><RefreshCcw size={16}/> {loading ? '불러오는 중...' : '컨텍스트 확인'}</button>
+          <button className="primary" disabled={loading} onClick={() => void load(userInput, true)}><RefreshCcw size={16}/> {loading ? '불러오는 중...' : '컨텍스트 확인'}</button>
         </section>
 
         {error && <p className="error">{error}</p>}
@@ -93,7 +98,7 @@ export default function ContextPage() {
                 <span>이유 표현 <strong>{context.profile.allowCausalExpression ? '허용' : '제한'}</strong></span>
                 <span>보호자 메모 <strong>{context.profile.notes?.trim() || '없음'}</strong></span>
               </div>
-              <div className="actions"><a className="primary" href={`/aac?userId=${context.userId}`}>이 사용자로 A/B 추천 테스트 <ArrowRight size={16}/></a><a className="secondary" href="/guardian">보호자 설정 열기</a></div>
+              <div className="actions"><a className="primary" href={`/aac?userId=${context.userId}`}>이 사용자로 A/B 추천 테스트 <ArrowRight size={16}/></a><a className="secondary" href={`/guardian?userId=${context.userId}`}>이 사용자 보호자 설정</a></div>
             </section>
           </>
         )}
