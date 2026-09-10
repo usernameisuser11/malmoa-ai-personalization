@@ -39,30 +39,38 @@ public class RecommendationService {
         CommunicationProfile profile = profileRepository.findByUserId(request.userId())
                 .orElseGet(() -> profileRepository.save(new CommunicationProfile(request.userId())));
         List<String> personalWords = personalWords(request.userId());
+        int maxEojeol = profile.getExpressiveMaxEojeol();
 
         List<String> generated = gemini.generateSentences(personalizedPrompt(request, profile, personalWords));
-        boolean finalFromGemini = !generated.isEmpty();
-        if (generated.isEmpty()) generated = fallback(request, profile.getExpressiveMaxEojeol());
-        List<Candidate> candidates = evaluate(generated, profile.getExpressiveMaxEojeol(), personalWords);
+        String source = generated.isEmpty() ? "fallback" : "gemini";
+        List<Candidate> candidates;
 
-        long validCount = candidates.stream().filter(Candidate::valid).count();
-        if (validCount < 3 && finalFromGemini) {
-            List<String> repaired = gemini.generateSentences(repairPrompt(request, profile, personalWords, candidates));
-            if (!repaired.isEmpty()) {
-                List<String> merged = new ArrayList<>();
-                candidates.stream().filter(Candidate::valid).map(Candidate::sentence).forEach(merged::add);
-                merged.addAll(repaired);
-                candidates = evaluate(merged, profile.getExpressiveMaxEojeol(), personalWords);
+        if (generated.isEmpty()) {
+            candidates = validCandidates(evaluate(fallback(request, maxEojeol), maxEojeol, personalWords));
+        } else {
+            candidates = evaluate(generated, maxEojeol, personalWords);
+            long validCount = candidates.stream().filter(Candidate::valid).count();
+
+            if (validCount < 3) {
+                List<String> repaired = gemini.generateSentences(repairPrompt(request, profile, personalWords, candidates));
+                if (!repaired.isEmpty()) {
+                    List<String> merged = new ArrayList<>();
+                    candidates.stream().filter(Candidate::valid).map(Candidate::sentence).forEach(merged::add);
+                    merged.addAll(repaired);
+                    candidates = evaluate(merged, maxEojeol, personalWords);
+                }
+            }
+
+            candidates = validCandidates(candidates);
+            if (candidates.size() < 3) {
+                source = "fallback";
+                candidates = validCandidates(evaluate(fallback(request, maxEojeol), maxEojeol, personalWords));
             }
         }
-        if (candidates.stream().noneMatch(Candidate::valid)) {
-            candidates = evaluate(fallback(request, profile.getExpressiveMaxEojeol()), profile.getExpressiveMaxEojeol(), personalWords);
-            finalFromGemini = false;
-        }
 
-        saveHistory(request, candidates, "personalized");
-        return new Result(request.userId(), "personalized", finalFromGemini ? "gemini" : "fallback",
-                request.situation(), personalWords, profile.getExpressiveMaxEojeol(), candidates);
+        saveHistory(request, candidates, "personalized", source);
+        return new Result(request.userId(), "personalized", source,
+                request.situation(), personalWords, maxEojeol, candidates);
     }
 
     @Transactional
@@ -70,13 +78,21 @@ public class RecommendationService {
         String prompt = "AAC 사용자가 상황에서 말할 수 있는 자연스러운 한국어 문장 3개를 추천해줘. " +
                 "상황: " + request.situation() + ". 의도: " + safe(request.intent()) +
                 ". 선택한 단어: " + String.join(", ", safeWords(request.selectedWords())) +
-                ". 사용자가 선택하지 않은 새로운 의도나 사실은 추가하지 마. JSON {\"sentences\":[\"...\"]} 형식으로만 답해.";
+                ". 사용자가 선택하지 않은 새로운 의도나 사실은 추가하지 마. " +
+                "후보 하나에 문장 하나만 넣고 JSON {\"sentences\":[\"...\"]} 형식으로만 답해.";
+
         List<String> generated = gemini.generateSentences(prompt);
-        boolean fromGemini = !generated.isEmpty();
+        String source = generated.isEmpty() ? "fallback" : "gemini";
         if (generated.isEmpty()) generated = fallback(request, 20);
-        List<Candidate> candidates = evaluate(generated, 100, List.of());
-        saveHistory(request, candidates, "baseline");
-        return new Result(request.userId(), "baseline", fromGemini ? "gemini" : "fallback",
+
+        List<Candidate> candidates = validCandidates(evaluate(generated, 100, List.of()));
+        if (candidates.isEmpty()) {
+            source = "fallback";
+            candidates = validCandidates(evaluate(fallback(request, 20), 100, List.of()));
+        }
+
+        saveHistory(request, candidates, "baseline", source);
+        return new Result(request.userId(), "baseline", source,
                 request.situation(), List.of(), null, candidates);
     }
 
@@ -117,7 +133,7 @@ public class RecommendationService {
                 [생성 규칙]
                 1. 한국어 문장 후보를 정확히 3개 만든다.
                 2. 각 문장은 %d어절을 절대 넘지 않는다.
-                3. 한 문장에는 핵심 의도 하나만 둔다.
+                3. 한 후보에는 문장 하나만 넣고 한 문장에는 핵심 의도 하나만 둔다.
                 4. 일상적이고 구체적인 단어를 우선한다.
                 5. 개인 어휘가 문맥에 맞으면 일반 동의어보다 우선한다.
                 6. 선택 카드의 의미를 보존한다.
@@ -129,8 +145,9 @@ public class RecommendationService {
     }
 
     private String repairPrompt(Request request, CommunicationProfile p, List<String> personalWords, List<Candidate> first) {
-        return "다음 AAC 후보들이 길이 조건을 일부 어겼다. 의미는 유지하면서 각 문장을 반드시 " + p.getExpressiveMaxEojeol() +
-                "어절 이하로 다시 만들어라. 새로운 의도를 추가하지 마라. 개인 어휘가 자연스러우면 우선 사용: " +
+        return "다음 AAC 후보들이 문장 형식 또는 길이 조건을 일부 어겼다. 의미는 유지하면서 후보를 정확히 3개 만들고, " +
+                "각 후보는 문장 하나이며 반드시 " + p.getExpressiveMaxEojeol() + "어절 이하로 다시 만들어라. " +
+                "새로운 의도나 사실을 추가하지 마라. 개인 어휘가 자연스러우면 우선 사용: " +
                 String.join(", ", personalWords) + ". 상황: " + request.situation() + ". 원래 의도: " + safe(request.intent()) +
                 ". 후보: " + first.stream().map(Candidate::sentence).toList() +
                 ". JSON {\"sentences\":[\"문장1\",\"문장2\",\"문장3\"]}만 반환.";
@@ -150,21 +167,33 @@ public class RecommendationService {
     }
 
     private List<Candidate> evaluate(List<String> sentences, int maxEojeol, List<String> personalWords) {
-        return sentences.stream().map(this::normalize).filter(s -> !s.isBlank()).distinct().map(sentence -> {
-            int eojeol = eojeolCount(sentence);
-            List<String> violations = new ArrayList<>();
-            if (eojeol > maxEojeol) violations.add("MAX_EOJEOL_EXCEEDED");
-            if (containsMultipleSentences(sentence)) violations.add("MULTIPLE_SENTENCES");
-            int personalCount = (int) personalWords.stream().filter(sentence::contains).distinct().count();
-            return new Candidate(sentence, eojeol, personalCount, violations.isEmpty(), List.copyOf(violations));
-        }).sorted(Comparator.comparing(Candidate::valid).reversed()
-                .thenComparing(Candidate::personalWordCount, Comparator.reverseOrder())
-                .thenComparing(Candidate::eojeolCount)).limit(3).toList();
+        return sentences.stream()
+                .map(this::normalize)
+                .filter(s -> !s.isBlank())
+                .distinct()
+                .map(sentence -> {
+                    int eojeol = eojeolCount(sentence);
+                    List<String> violations = new ArrayList<>();
+                    if (eojeol > maxEojeol) violations.add("MAX_EOJEOL_EXCEEDED");
+                    if (containsMultipleSentences(sentence)) violations.add("MULTIPLE_SENTENCES");
+                    int personalCount = (int) personalWords.stream().filter(sentence::contains).distinct().count();
+                    return new Candidate(sentence, eojeol, personalCount, violations.isEmpty(), List.copyOf(violations));
+                })
+                .sorted(Comparator.comparing(Candidate::valid).reversed()
+                        .thenComparing(Candidate::personalWordCount, Comparator.reverseOrder())
+                        .thenComparing(Candidate::eojeolCount))
+                .limit(6)
+                .toList();
     }
 
-    private void saveHistory(Request request, List<Candidate> candidates, String mode) {
-        candidates.forEach(c -> historyRepository.save(new RecommendationHistory(request.userId(), mode, request.situation(),
-                request.intent(), c.sentence(), c.eojeolCount(), c.personalWordCount())));
+    private List<Candidate> validCandidates(List<Candidate> candidates) {
+        return candidates.stream().filter(Candidate::valid).limit(3).toList();
+    }
+
+    private void saveHistory(Request request, List<Candidate> candidates, String mode, String generationSource) {
+        candidates.forEach(c -> historyRepository.save(new RecommendationHistory(
+                request.userId(), mode, generationSource, request.situation(), request.intent(),
+                c.sentence(), c.eojeolCount(), c.personalWordCount())));
     }
 
     private List<String> fallback(Request request, int maxEojeol) {
@@ -174,7 +203,12 @@ public class RecommendationService {
         if (request.intent() != null && !request.intent().isBlank()) raw.add(request.intent().trim());
         if (selected.size() >= 2) raw.add(selected.get(0) + " " + selected.get(selected.size() - 1));
         if (raw.isEmpty()) raw.add("도와주세요");
-        return raw.stream().map(s -> trimToEojeol(s, maxEojeol)).map(this::normalize).distinct().limit(3).toList();
+        return raw.stream()
+                .map(s -> trimToEojeol(s, maxEojeol))
+                .map(this::normalize)
+                .distinct()
+                .limit(3)
+                .toList();
     }
 
     private boolean containsMultipleSentences(String value) {
@@ -204,6 +238,11 @@ public class RecommendationService {
     }
 
     private List<String> safeWords(List<String> words) {
-        return words == null ? List.of() : words.stream().filter(Objects::nonNull).map(String::trim).filter(s -> !s.isBlank()).limit(3).toList();
+        return words == null ? List.of() : words.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .limit(3)
+                .toList();
     }
 }
