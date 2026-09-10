@@ -18,7 +18,7 @@ public class UserSymbolCustomization {
     private String ttsText;
     @Column(name = "user_alias")
     private String userAlias;
-    @Column(name = "custom_image_url")
+    @Column(name = "custom_image_url", columnDefinition = "text")
     private String customImageUrl;
     @Column(nullable = false)
     private boolean favorite;
