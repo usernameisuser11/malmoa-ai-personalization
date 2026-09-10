@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface RecommendationHistoryRepository extends JpaRepository<RecommendationHistory, Long> {
     List<RecommendationHistory> findTop200ByUserIdOrderByCreatedAtDesc(Long userId);
-    Optional<RecommendationHistory> findFirstByUserIdAndGeneratedSentenceOrderByCreatedAtDesc(Long userId, String generatedSentence);
+    Optional<RecommendationHistory> findFirstByUserIdAndModeAndGeneratedSentenceOrderByCreatedAtDesc(Long userId, String mode, String generatedSentence);
 }

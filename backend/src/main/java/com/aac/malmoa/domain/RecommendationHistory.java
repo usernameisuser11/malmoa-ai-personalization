@@ -10,6 +10,8 @@ public class RecommendationHistory {
     private Long id;
     @Column(name = "user_id", nullable = false)
     private Long userId;
+    @Column(nullable = false)
+    private String mode;
     private String situation;
     @Column(name = "source_intent", columnDefinition = "text")
     private String sourceIntent;
@@ -25,9 +27,10 @@ public class RecommendationHistory {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     protected RecommendationHistory() {}
-    public RecommendationHistory(Long userId, String situation, String sourceIntent, String generatedSentence,
+    public RecommendationHistory(Long userId, String mode, String situation, String sourceIntent, String generatedSentence,
                                  int eojeolCount, int personalWordCount) {
         this.userId = userId;
+        this.mode = mode;
         this.situation = situation;
         this.sourceIntent = sourceIntent;
         this.generatedSentence = generatedSentence;
@@ -36,7 +39,9 @@ public class RecommendationHistory {
     }
     public Long getId() { return id; }
     public Long getUserId() { return userId; }
+    public String getMode() { return mode; }
     public String getSituation() { return situation; }
+    public String getSourceIntent() { return sourceIntent; }
     public String getGeneratedSentence() { return generatedSentence; }
     public int getEojeolCount() { return eojeolCount; }
     public int getPersonalWordCount() { return personalWordCount; }

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.aac.malmoa.recommendation.RecommendationDtos.*;
 
@@ -40,11 +39,24 @@ public class RecommendationService {
         CommunicationProfile profile = profileRepository.findByUserId(request.userId())
                 .orElseGet(() -> profileRepository.save(new CommunicationProfile(request.userId())));
         List<String> personalWords = personalWords(request.userId());
-        String prompt = personalizedPrompt(request, profile, personalWords);
-        List<String> generated = gemini.generateSentences(prompt);
+        List<String> generated = gemini.generateSentences(personalizedPrompt(request, profile, personalWords));
         if (generated.isEmpty()) generated = fallback(request, profile.getExpressiveMaxEojeol());
         List<Candidate> candidates = evaluate(generated, profile.getExpressiveMaxEojeol(), personalWords);
-        saveHistory(request, candidates);
+
+        long validCount = candidates.stream().filter(Candidate::valid).count();
+        if (validCount < 3 && !generated.isEmpty()) {
+            List<String> repaired = gemini.generateSentences(repairPrompt(request, profile, personalWords, candidates));
+            if (!repaired.isEmpty()) {
+                List<String> merged = new ArrayList<>();
+                candidates.stream().filter(Candidate::valid).map(Candidate::sentence).forEach(merged::add);
+                merged.addAll(repaired);
+                candidates = evaluate(merged, profile.getExpressiveMaxEojeol(), personalWords);
+            }
+        }
+        if (candidates.stream().filter(Candidate::valid).count() < 1) {
+            candidates = evaluate(fallback(request, profile.getExpressiveMaxEojeol()), profile.getExpressiveMaxEojeol(), personalWords);
+        }
+        saveHistory(request, candidates, "personalized");
         return new Result(request.userId(), "personalized", request.situation(), personalWords,
                 profile.getExpressiveMaxEojeol(), candidates);
     }
@@ -54,11 +66,12 @@ public class RecommendationService {
         String prompt = "AAC 사용자가 상황에서 말할 수 있는 자연스러운 한국어 문장 3개를 추천해줘. " +
                 "상황: " + request.situation() + ". 의도: " + safe(request.intent()) +
                 ". 선택한 단어: " + String.join(", ", safeWords(request.selectedWords())) +
-                ". JSON {\"sentences\":[\"...\"]} 형식으로만 답해.";
+                ". 사용자가 선택하지 않은 새로운 의도나 사실은 추가하지 마. JSON {\"sentences\":[\"...\"]} 형식으로만 답해.";
         List<String> generated = gemini.generateSentences(prompt);
         if (generated.isEmpty()) generated = fallback(request, 20);
-        return new Result(request.userId(), "baseline", request.situation(), List.of(), null,
-                evaluate(generated, 100, List.of()));
+        List<Candidate> candidates = evaluate(generated, 100, List.of());
+        saveHistory(request, candidates, "baseline");
+        return new Result(request.userId(), "baseline", request.situation(), List.of(), null, candidates);
     }
 
     @Transactional
@@ -97,7 +110,7 @@ public class RecommendationService {
 
                 [생성 규칙]
                 1. 한국어 문장 후보를 정확히 3개 만든다.
-                2. 각 문장은 %d어절을 넘지 않는다.
+                2. 각 문장은 %d어절을 절대 넘지 않는다.
                 3. 한 문장에는 핵심 의도 하나만 둔다.
                 4. 일상적이고 구체적인 단어를 우선한다.
                 5. 개인 어휘가 문맥에 맞으면 일반 동의어보다 우선한다.
@@ -109,6 +122,14 @@ public class RecommendationService {
                 safe(request.intent()), String.join(", ", safeWords(request.selectedWords())), p.getExpressiveMaxEojeol());
     }
 
+    private String repairPrompt(Request request, CommunicationProfile p, List<String> personalWords, List<Candidate> first) {
+        return "다음 AAC 후보들이 길이 조건을 일부 어겼다. 의미는 유지하면서 각 문장을 반드시 " + p.getExpressiveMaxEojeol() +
+                "어절 이하로 다시 만들어라. 새로운 의도를 추가하지 마라. 개인 어휘가 자연스러우면 우선 사용: " +
+                String.join(", ", personalWords) + ". 상황: " + request.situation() + ". 원래 의도: " + safe(request.intent()) +
+                ". 후보: " + first.stream().map(Candidate::sentence).toList() +
+                ". JSON {\"sentences\":[\"문장1\",\"문장2\",\"문장3\"]}만 반환.";
+    }
+
     private List<String> personalWords(Long userId) {
         LinkedHashSet<String> words = new LinkedHashSet<>();
         List<UserSymbolCustomization> custom = customizationRepository.findByUserId(userId);
@@ -117,29 +138,24 @@ public class RecommendationService {
             if (c.getDisplayText() != null) words.add(c.getDisplayText());
             words.add(c.getSymbol().getCanonicalText());
         });
-        usageRepository.findTop20ByUserIdOrderByUsageCountDescLastUsedAtDesc(userId)
-                .forEach(u -> words.add(u.getWord()));
+        usageRepository.findTop20ByUserIdOrderByUsageCountDescLastUsedAtDesc(userId).forEach(u -> words.add(u.getWord()));
         return words.stream().limit(30).toList();
     }
 
     private List<Candidate> evaluate(List<String> sentences, int maxEojeol, List<String> personalWords) {
-        return sentences.stream().map(this::normalize).filter(s -> !s.isBlank()).distinct()
-                .map(sentence -> {
-                    int eojeol = eojeolCount(sentence);
-                    List<String> violations = new ArrayList<>();
-                    if (eojeol > maxEojeol) violations.add("MAX_EOJEOL_EXCEEDED");
-                    int personalCount = (int) personalWords.stream().filter(sentence::contains).distinct().count();
-                    return new Candidate(sentence, eojeol, personalCount, violations.isEmpty(), violations);
-                })
-                .sorted(Comparator.comparing(Candidate::valid).reversed()
-                        .thenComparing(Candidate::personalWordCount, Comparator.reverseOrder())
-                        .thenComparing(Candidate::eojeolCount))
-                .limit(3)
-                .toList();
+        return sentences.stream().map(this::normalize).filter(s -> !s.isBlank()).distinct().map(sentence -> {
+            int eojeol = eojeolCount(sentence);
+            List<String> violations = new ArrayList<>();
+            if (eojeol > maxEojeol) violations.add("MAX_EOJEOL_EXCEEDED");
+            int personalCount = (int) personalWords.stream().filter(sentence::contains).distinct().count();
+            return new Candidate(sentence, eojeol, personalCount, violations.isEmpty(), violations);
+        }).sorted(Comparator.comparing(Candidate::valid).reversed()
+                .thenComparing(Candidate::personalWordCount, Comparator.reverseOrder())
+                .thenComparing(Candidate::eojeolCount)).limit(3).toList();
     }
 
-    private void saveHistory(Request request, List<Candidate> candidates) {
-        candidates.forEach(c -> historyRepository.save(new RecommendationHistory(request.userId(), request.situation(),
+    private void saveHistory(Request request, List<Candidate> candidates, String mode) {
+        candidates.forEach(c -> historyRepository.save(new RecommendationHistory(request.userId(), mode, request.situation(),
                 request.intent(), c.sentence(), c.eojeolCount(), c.personalWordCount())));
     }
 
@@ -152,19 +168,9 @@ public class RecommendationService {
         if (raw.isEmpty()) raw.add("도와주세요");
         return raw.stream().map(s -> trimToEojeol(s, maxEojeol)).map(this::normalize).distinct().limit(3).toList();
     }
-
-    private String trimToEojeol(String value, int max) {
-        String[] parts = value.trim().split("\\s+");
-        return String.join(" ", Arrays.copyOf(parts, Math.min(parts.length, Math.max(1, max))));
-    }
-    private int eojeolCount(String value) { return value.isBlank() ? 0 : value.trim().split("\\s+").length; }
-    private String normalize(String value) {
-        String s = value == null ? "" : value.trim().replaceAll("^[\\-•\\d.\\s]+", "");
-        if (!s.isBlank() && !s.matches(".*[.!?요다까]$")) s += ".";
-        return s;
-    }
-    private String safe(String value) { return value == null || value.isBlank() ? "미지정" : value.trim(); }
-    private List<String> safeWords(List<String> words) {
-        return words == null ? List.of() : words.stream().filter(Objects::nonNull).map(String::trim).filter(s -> !s.isBlank()).limit(3).toList();
-    }
+    private String trimToEojeol(String value, int max) { String[] parts=value.trim().split("\\s+"); return String.join(" ", Arrays.copyOf(parts, Math.min(parts.length, Math.max(1,max)))); }
+    private int eojeolCount(String value) { return value.isBlank()?0:value.trim().split("\\s+").length; }
+    private String normalize(String value) { String s=value==null?"":value.trim().replaceAll("^[\\-•\\d.\\s]+",""); if(!s.isBlank()&&!s.matches(".*[.!?요다까]$"))s+="."; return s; }
+    private String safe(String value) { return value==null||value.isBlank()?"미지정":value.trim(); }
+    private List<String> safeWords(List<String> words) { return words==null?List.of():words.stream().filter(Objects::nonNull).map(String::trim).filter(s->!s.isBlank()).limit(3).toList(); }
 }
