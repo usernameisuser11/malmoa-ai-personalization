@@ -3,6 +3,7 @@ import './globals.css';
 import './result-status.css';
 import './context.css';
 import './yeoseo-lab.css';
+import './yeoseo-guardian.css';
 
 export const metadata: Metadata = {
   title: '말모아',
