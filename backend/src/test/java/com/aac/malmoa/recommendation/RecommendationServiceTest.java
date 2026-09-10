@@ -60,7 +60,7 @@ class RecommendationServiceTest {
     }
 
     @Test
-    void marksResultAsGeminiWhenLiveCandidatesAreReturned() {
+    void marksResultAsGeminiWhenThreeValidLiveCandidatesAreReturned() {
         when(gemini.generateSentences(anyString())).thenReturn(List.of("물 주세요", "선생님 물", "물 마셔요"));
         Request request = new Request(1L, "학교", "물을 요청한다", List.of("물"));
 
@@ -72,6 +72,21 @@ class RecommendationServiceTest {
     }
 
     @Test
+    void fallsBackEntirelyWhenGeminiCannotProduceThreeValidPersonalizedCandidates() {
+        when(gemini.generateSentences(anyString()))
+                .thenReturn(List.of("물 주세요", "이 문장은 두 어절 제한보다 훨씬 깁니다", "첫 문장. 두 번째 문장."))
+                .thenReturn(List.of());
+        Request request = new Request(1L, "학교", "물을 요청한다", List.of("물"));
+
+        Result result = service.personalized(request);
+
+        assertEquals("fallback", result.source());
+        assertFalse(result.candidates().isEmpty());
+        assertTrue(result.candidates().stream().allMatch(Candidate::valid));
+        assertTrue(result.candidates().stream().allMatch(candidate -> candidate.eojeolCount() <= 2));
+    }
+
+    @Test
     void baselineAlsoReportsFallbackInsteadOfPretendingAiWasUsed() {
         when(gemini.generateSentences(anyString())).thenReturn(List.of());
         Request request = new Request(1L, "집", "쉬고 싶다", List.of());
@@ -80,5 +95,6 @@ class RecommendationServiceTest {
 
         assertEquals("fallback", result.source());
         assertFalse(result.candidates().isEmpty());
+        assertTrue(result.candidates().stream().allMatch(Candidate::valid));
     }
 }
