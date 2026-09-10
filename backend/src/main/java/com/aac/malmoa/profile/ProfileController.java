@@ -6,6 +6,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +16,9 @@ import org.springframework.web.bind.annotation.*;
 public class ProfileController {
     private final CommunicationProfileRepository repository;
 
-    public ProfileController(CommunicationProfileRepository repository) { this.repository = repository; }
+    public ProfileController(CommunicationProfileRepository repository) {
+        this.repository = repository;
+    }
 
     @GetMapping
     @Transactional
@@ -32,6 +36,7 @@ public class ProfileController {
     }
 
     private CommunicationProfile findOrCreate(Long userId) {
+        if (userId == null || userId < 1) throw new IllegalArgumentException("사용자 ID를 확인해주세요.");
         return repository.findByUserId(userId).orElseGet(() -> repository.save(new CommunicationProfile(userId)));
     }
 
@@ -39,17 +44,17 @@ public class ProfileController {
             @Min(1) @Max(120) Integer age,
             @NotNull @Min(1) @Max(20) Integer receptiveMaxEojeol,
             @NotNull @Min(1) @Max(20) Integer expressiveMaxEojeol,
-            String vocabularyLevel,
+            @NotNull @Pattern(regexp = "^(VERY_EASY|EASY|GENERAL)$") String vocabularyLevel,
             boolean allowAbstractLanguage,
             boolean allowCausalExpression,
-            String notes) {}
+            @Size(max = 2000) String notes) {}
 
     public record ProfileResponse(Long userId, Integer age, Integer receptiveMaxEojeol, Integer expressiveMaxEojeol,
                                   String vocabularyLevel, boolean allowAbstractLanguage,
                                   boolean allowCausalExpression, String notes) {
-        static ProfileResponse from(CommunicationProfile p) {
-            return new ProfileResponse(p.getUserId(), p.getAge(), p.getReceptiveMaxEojeol(), p.getExpressiveMaxEojeol(),
-                    p.getVocabularyLevel(), p.isAllowAbstractLanguage(), p.isAllowCausalExpression(), p.getNotes());
+        static ProfileResponse from(CommunicationProfile profile) {
+            return new ProfileResponse(profile.getUserId(), profile.getAge(), profile.getReceptiveMaxEojeol(), profile.getExpressiveMaxEojeol(),
+                    profile.getVocabularyLevel(), profile.isAllowAbstractLanguage(), profile.isAllowCausalExpression(), profile.getNotes());
         }
     }
 }
