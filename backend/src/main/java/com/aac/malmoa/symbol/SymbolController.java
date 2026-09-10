@@ -16,7 +16,8 @@ import jakarta.validation.constraints.Size;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,20 +42,22 @@ public class SymbolController {
     @GetMapping("/symbols")
     @Transactional(readOnly = true)
     public List<SymbolResponse> symbols(@PathVariable Long userId) {
+        requireUserId(userId);
         Map<Long, UserSymbolCustomization> custom = customizationRepository.findByUserId(userId).stream()
                 .collect(Collectors.toMap(c -> c.getSymbol().getId(), Function.identity()));
         return symbolRepository.findAllByOrderByCategoryAscCanonicalTextAsc().stream()
-                .map(s -> SymbolResponse.from(s, custom.get(s.getId())))
+                .map(symbol -> SymbolResponse.from(symbol, custom.get(symbol.getId())))
                 .toList();
     }
 
     @GetMapping("/emergency-symbols")
     @Transactional(readOnly = true)
     public List<SymbolResponse> emergency(@PathVariable Long userId) {
+        requireUserId(userId);
         Map<Long, UserSymbolCustomization> custom = customizationRepository.findByUserId(userId).stream()
                 .collect(Collectors.toMap(c -> c.getSymbol().getId(), Function.identity()));
         return symbolRepository.findByEmergencyTrueOrderByIdAsc().stream()
-                .map(s -> SymbolResponse.from(s, custom.get(s.getId())))
+                .map(symbol -> SymbolResponse.from(symbol, custom.get(symbol.getId())))
                 .toList();
     }
 
@@ -62,6 +65,8 @@ public class SymbolController {
     @Transactional
     public SymbolResponse customize(@PathVariable Long userId, @PathVariable Long symbolId,
                                     @Valid @RequestBody CustomizationRequest request) {
+        requireUserId(userId);
+        if (symbolId == null || symbolId < 1) throw new IllegalArgumentException("상징 ID를 확인해주세요.");
         AacSymbol symbol = symbolRepository.findById(symbolId).orElseThrow();
         UserSymbolCustomization customization = customizationRepository.findByUserIdAndSymbolId(userId, symbolId)
                 .orElseGet(() -> new UserSymbolCustomization(userId, symbol));
@@ -73,8 +78,8 @@ public class SymbolController {
     @PostMapping("/usage")
     @Transactional
     public void usage(@PathVariable Long userId, @Valid @RequestBody UsageRequest request) {
+        requireUserId(userId);
         for (String raw : request.words()) {
-            if (raw == null || raw.isBlank()) continue;
             String word = raw.trim();
             WordUsage usage = usageRepository.findByUserIdAndWord(userId, word)
                     .orElseGet(() -> new WordUsage(userId, word));
@@ -84,9 +89,13 @@ public class SymbolController {
         }
     }
 
+    private void requireUserId(Long userId) {
+        if (userId == null || userId < 1) throw new IllegalArgumentException("사용자 ID를 확인해주세요.");
+    }
+
     public record CustomizationRequest(
             @Size(max = 80) String displayText,
-            @Size(max = 200) String ttsText,
+            @Size(max = 160) String ttsText,
             @Size(max = 80) String userAlias,
             @Size(max = 500000) String customImageUrl,
             boolean favorite,
