@@ -7,12 +7,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
   });
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `API ${response.status}`);
-  }
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+  const text = await response.text();
+  if (!response.ok) throw new Error(text || `API ${response.status}`);
+  if (!text) return undefined as T;
+  return JSON.parse(text) as T;
 }
 
 export const api = {
