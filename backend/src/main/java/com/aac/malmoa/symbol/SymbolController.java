@@ -8,8 +8,11 @@ import com.aac.malmoa.repository.AacSymbolRepository;
 import com.aac.malmoa.repository.UserSymbolCustomizationRepository;
 import com.aac.malmoa.repository.WordUsageRepository;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,13 +61,13 @@ public class SymbolController {
     @PutMapping("/symbols/{symbolId}")
     @Transactional
     public SymbolResponse customize(@PathVariable Long userId, @PathVariable Long symbolId,
-                                    @RequestBody CustomizationRequest request) {
+                                    @Valid @RequestBody CustomizationRequest request) {
         AacSymbol symbol = symbolRepository.findById(symbolId).orElseThrow();
-        UserSymbolCustomization c = customizationRepository.findByUserIdAndSymbolId(userId, symbolId)
+        UserSymbolCustomization customization = customizationRepository.findByUserIdAndSymbolId(userId, symbolId)
                 .orElseGet(() -> new UserSymbolCustomization(userId, symbol));
-        c.update(request.displayText(), request.ttsText(), request.userAlias(), request.customImageUrl(),
+        customization.update(request.displayText(), request.ttsText(), request.userAlias(), request.customImageUrl(),
                 request.favorite(), request.importantWord(), request.sortOrder());
-        return SymbolResponse.from(symbol, customizationRepository.save(c));
+        return SymbolResponse.from(symbol, customizationRepository.save(customization));
     }
 
     @PostMapping("/usage")
@@ -81,21 +84,30 @@ public class SymbolController {
         }
     }
 
-    public record CustomizationRequest(String displayText, String ttsText, String userAlias,
-                                       String customImageUrl, boolean favorite, boolean importantWord, Integer sortOrder) {}
-    public record UsageRequest(@NotNull List<@NotBlank String> words) {}
+    public record CustomizationRequest(
+            @Size(max = 80) String displayText,
+            @Size(max = 200) String ttsText,
+            @Size(max = 80) String userAlias,
+            @Size(max = 500000) String customImageUrl,
+            boolean favorite,
+            boolean importantWord,
+            @Min(0) @Max(9999) Integer sortOrder) {}
+
+    public record UsageRequest(
+            @NotNull @Size(min = 1, max = 50)
+            List<@NotBlank @Size(max = 100) String> words) {}
 
     public record SymbolResponse(Long id, String assetName, String category, String canonicalText,
                                  String displayText, String ttsText, String userAlias, String imageUrl,
                                  String colorHex, boolean emergency, boolean favorite, boolean importantWord,
                                  Integer sortOrder) {
-        static SymbolResponse from(AacSymbol s, UserSymbolCustomization c) {
-            return new SymbolResponse(s.getId(), s.getAssetName(), s.getCategory(), s.getCanonicalText(),
-                    c != null && c.getDisplayText() != null ? c.getDisplayText() : s.getCanonicalText(),
-                    c != null && c.getTtsText() != null ? c.getTtsText() : s.getDefaultTtsText(),
-                    c == null ? null : c.getUserAlias(), c == null ? null : c.getCustomImageUrl(),
-                    s.getColorHex(), s.isEmergency(), c != null && c.isFavorite(),
-                    c != null && c.isImportantWord(), c == null ? null : c.getSortOrder());
+        static SymbolResponse from(AacSymbol symbol, UserSymbolCustomization customization) {
+            return new SymbolResponse(symbol.getId(), symbol.getAssetName(), symbol.getCategory(), symbol.getCanonicalText(),
+                    customization != null && customization.getDisplayText() != null ? customization.getDisplayText() : symbol.getCanonicalText(),
+                    customization != null && customization.getTtsText() != null ? customization.getTtsText() : symbol.getDefaultTtsText(),
+                    customization == null ? null : customization.getUserAlias(), customization == null ? null : customization.getCustomImageUrl(),
+                    symbol.getColorHex(), symbol.isEmergency(), customization != null && customization.isFavorite(),
+                    customization != null && customization.isImportantWord(), customization == null ? null : customization.getSortOrder());
         }
     }
 }
