@@ -3,11 +3,13 @@ package com.aac.malmoa.symbol;
 import com.aac.malmoa.domain.AacSymbol;
 import com.aac.malmoa.domain.UserSymbolCustomization;
 import com.aac.malmoa.domain.WordUsage;
+import com.aac.malmoa.notification.NotificationService;
 import com.aac.malmoa.repository.AacSymbolRepository;
 import com.aac.malmoa.repository.UserSymbolCustomizationRepository;
 import com.aac.malmoa.repository.WordUsageRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,13 +23,16 @@ public class SymbolController {
     private final AacSymbolRepository symbolRepository;
     private final UserSymbolCustomizationRepository customizationRepository;
     private final WordUsageRepository usageRepository;
+    private final NotificationService notificationService;
 
     public SymbolController(AacSymbolRepository symbolRepository,
                             UserSymbolCustomizationRepository customizationRepository,
-                            WordUsageRepository usageRepository) {
+                            WordUsageRepository usageRepository,
+                            NotificationService notificationService) {
         this.symbolRepository = symbolRepository;
         this.customizationRepository = customizationRepository;
         this.usageRepository = usageRepository;
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/symbols")
@@ -72,12 +77,13 @@ public class SymbolController {
                     .orElseGet(() -> new WordUsage(userId, word));
             usage.increment();
             usageRepository.save(usage);
+            notificationService.recordIfEmergency(userId, word);
         }
     }
 
     public record CustomizationRequest(String displayText, String ttsText, String userAlias,
                                        String customImageUrl, boolean favorite, boolean importantWord, Integer sortOrder) {}
-    public record UsageRequest(List<@NotBlank String> words) {}
+    public record UsageRequest(@NotNull List<@NotBlank String> words) {}
 
     public record SymbolResponse(Long id, String assetName, String category, String canonicalText,
                                  String displayText, String ttsText, String userAlias, String imageUrl,

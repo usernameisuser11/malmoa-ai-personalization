@@ -25,6 +25,15 @@ export type AacSymbol = {
   sortOrder: number | null;
 };
 
+export type GuardianNotification = {
+  id: number;
+  aacUserId: number;
+  aacUserName: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+};
+
 export type Candidate = {
   sentence: string;
   eojeolCount: number;
@@ -42,7 +51,4 @@ export type RecommendationResult = {
   candidates: Candidate[];
 };
 
-export type Comparison = {
-  baseline: RecommendationResult;
-  personalized: RecommendationResult;
-};
+export type Comparison = { baseline: RecommendationResult; personalized: RecommendationResult };
