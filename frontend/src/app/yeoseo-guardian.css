@@ -1,0 +1,102 @@
+/* Guardian-only refinements from Yeseo's profile/grid/voice handoff. */
+.guardian-shell .page {
+  width: min(880px, calc(100% - 48px));
+}
+.guardian-shell .page-title {
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+.guardian-shell .page-title > .small {
+  display: none;
+}
+.guardian-shell .panel {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.guardian-shell .panel > h2 {
+  font-size: 20px;
+}
+.guardian-shell .form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.guardian-shell .panel:nth-of-type(2) .field input,
+.guardian-shell .panel:nth-of-type(2) .field select {
+  min-height: 52px;
+  font-size: 16px;
+}
+.guardian-shell .panel:nth-of-type(2) .actions .secondary:first-child svg {
+  display: none;
+}
+.guardian-shell .panel:nth-of-type(2) .actions .secondary:first-child::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  background: var(--yeoseo-play-sm) center / 20px 20px no-repeat;
+}
+.guardian-shell .panel:nth-of-type(2) .field input[type='range'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  min-height: 4px;
+  margin: 18px 0 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--figma-gray-200);
+}
+.guardian-shell .panel:nth-of-type(2) .field input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 3px solid var(--figma-green);
+  border-radius: 50%;
+  background: #fff;
+}
+.guardian-shell .panel:nth-of-type(2) .field input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 3px solid var(--figma-green);
+  border-radius: 50%;
+  background: #fff;
+}
+.guardian-shell .preset-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.guardian-shell .preset-card {
+  min-height: 76px;
+  text-align: center;
+}
+.guardian-shell .edit-layout {
+  grid-template-columns: 230px minmax(0, 1fr);
+}
+.guardian-shell .custom-image-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  background: var(--figma-gray-100);
+}
+.guardian-shell .actions .primary {
+  min-width: 160px;
+}
+
+@media (max-width: 720px) {
+  .guardian-shell .page {
+    width: min(100% - 32px, 560px);
+  }
+  .guardian-shell .panel {
+    max-width: 520px;
+  }
+  .guardian-shell .form-grid,
+  .guardian-shell .edit-layout {
+    grid-template-columns: 1fr;
+  }
+  .guardian-shell .preset-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
