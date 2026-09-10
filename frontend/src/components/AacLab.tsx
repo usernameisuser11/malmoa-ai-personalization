@@ -162,6 +162,7 @@ export function AacLab({ userId = 1 }: { userId?: number }) {
           <p>사용자 #{userId} · {columns}열 격자 · TTS {settings.speechRate.toFixed(1)}× · 같은 입력으로 일반 AI와 개인화 AI를 비교합니다.</p>
         </div>
         <div className="actions">
+          <a className="secondary" href={`/context?userId=${userId}`}>개인화 Context</a>
           <a className="secondary" href={api.experimentExportUrl(userId)}><Download size={16}/> 실험 CSV</a>
           <button className="emergency-toggle" onClick={() => setEmergencyMode(value => !value)}><AlertTriangle size={17}/> 긴급 모드</button>
         </div>
@@ -205,7 +206,7 @@ export function AacLab({ userId = 1 }: { userId?: number }) {
       {comparison && (
         <section className="panel">
           <h2>3. 추천 결과 비교</h2>
-          <p className="panel-desc">실제로 사용하고 싶은 문장을 눌러 선택률을 기록합니다. 개인화 결과는 길이 위반 시 재생성을 시도합니다.</p>
+          <p className="panel-desc">실제로 사용하고 싶은 문장을 눌러 선택률을 기록합니다. 개인화 결과는 조건을 통과한 후보만 사용자에게 보여줍니다.</p>
           {fallbackUsed && <p className="fallback-notice"><AlertTriangle size={16}/> 일부 결과가 Gemini가 아니라 안전한 로컬 fallback으로 생성되었습니다. Render의 API 키와 모델 설정을 확인해주세요.</p>}
           <div className="two-col"><Result title="일반 AI" result={comparison.baseline} onChoose={sentence => void choose('baseline', sentence)}/><Result title="말모아 개인화 AI" result={comparison.personalized} personalized onChoose={sentence => void choose('personalized', sentence)}/></div>
         </section>
@@ -224,5 +225,5 @@ function Result({ title, result, personalized = false, onChoose }: { title: stri
 }
 
 function StatsColumn({ title, stats, personalized = false }: { title: string; stats: RecommendationStats['baseline']; personalized?: boolean }) {
-  return <div className={`stats-column ${personalized ? 'personalized' : ''}`}><strong>{title}</strong><div><span>후보 {stats.generatedCount}</span><span>선택 {stats.selectedCount}</span><span>선택률 {Math.round(stats.selectionRate * 100)}%</span><span>평균 {stats.averageEojeol.toFixed(1)}어절</span>{personalized && <span>개인어휘 {stats.averagePersonalWordCount.toFixed(1)}개</span>}</div></div>;
+  return <div className={`stats-column ${personalized ? 'personalized' : ''}`}><strong>{title}</strong><div><span>후보 {stats.generatedCount}</span><span>Gemini {stats.geminiGeneratedCount}</span><span>Fallback {stats.fallbackGeneratedCount}</span><span>선택 {stats.selectedCount}</span><span>선택률 {Math.round(stats.selectionRate * 100)}%</span><span>평균 {stats.averageEojeol.toFixed(1)}어절</span>{personalized && <span>개인어휘 {stats.averagePersonalWordCount.toFixed(1)}개</span>}</div></div>;
 }
