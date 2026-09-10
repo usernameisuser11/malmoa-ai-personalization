@@ -8,6 +8,7 @@ import type {
   PairingClaim,
   PairingCredential,
   RecommendationStats,
+  SystemReadiness,
   UserSettings,
 } from '@/types';
 
@@ -36,6 +37,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  readiness: () => request<SystemReadiness>('/api/health/ready'),
   getUserSettings: (userId: number) => request<UserSettings>(`/api/users/${userId}/settings`),
   saveUserSettings: (userId: number, settings: Omit<UserSettings, 'userId'>) =>
     request<UserSettings>(`/api/users/${userId}/settings`, { method: 'PUT', body: JSON.stringify(settings) }),

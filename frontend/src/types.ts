@@ -11,3 +11,4 @@ export type PairingCredential={code:string;qrPayload:string;expiresAt:string;rem
 export type CurrentPairing={status:string;expiresAt:string;remainingSeconds:number};
 export type PairingClaim={aacUserId:number;deviceId:string;pairedAt:string};
 export type PairedDevice={deviceId:string;deviceName:string;deviceType:'TABLET'|'MOBILE'|'WEB'|'UNKNOWN';pairedAt:string};
+export type SystemReadiness={service:string;database:'ok'|'error';geminiConfigured:boolean;geminiModel:string};
