@@ -7,3 +7,7 @@ export type RecommendationResult={userId:number;mode:'baseline'|'personalized';s
 export type Comparison={baseline:RecommendationResult;personalized:RecommendationResult};
 export type ModeStats={generatedCount:number;selectedCount:number;selectionRate:number;averageEojeol:number;averagePersonalWordCount:number};
 export type RecommendationStats={baseline:ModeStats;personalized:ModeStats};
+export type PairingCredential={code:string;qrPayload:string;expiresAt:string;remainingSeconds:number};
+export type CurrentPairing={status:string;expiresAt:string;remainingSeconds:number};
+export type PairingClaim={aacUserId:number;deviceId:string;pairedAt:string};
+export type PairedDevice={deviceId:string;deviceName:string;deviceType:'TABLET'|'MOBILE'|'WEB'|'UNKNOWN';pairedAt:string};
