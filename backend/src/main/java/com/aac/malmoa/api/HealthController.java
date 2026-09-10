@@ -1,6 +1,8 @@
 package com.aac.malmoa.api;
 
 import com.aac.malmoa.recommendation.GeminiClient;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,13 +28,15 @@ public class HealthController {
     }
 
     @GetMapping("/health/ready")
-    public Map<String, Object> readiness() {
+    public ResponseEntity<Map<String, Object>> readiness() {
+        boolean databaseReady = databaseReady();
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("service", "malmoa-personalization-api");
-        result.put("database", databaseReady() ? "ok" : "error");
+        result.put("ready", databaseReady);
+        result.put("database", databaseReady ? "ok" : "error");
         result.put("geminiConfigured", geminiClient.isConfigured());
         result.put("geminiModel", geminiClient.model());
-        return result;
+        return ResponseEntity.status(databaseReady ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE).body(result);
     }
 
     private boolean databaseReady() {

@@ -7,6 +7,7 @@ import type {
   PairedDevice,
   PairingClaim,
   PairingCredential,
+  PersonalizationContext,
   RecommendationStats,
   SystemReadiness,
   UserSettings,
@@ -38,6 +39,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   readiness: () => request<SystemReadiness>('/api/health/ready'),
+  personalizationContext: (userId: number) => request<PersonalizationContext>(`/api/users/${userId}/personalization-context`),
   getUserSettings: (userId: number) => request<UserSettings>(`/api/users/${userId}/settings`),
   saveUserSettings: (userId: number, settings: Omit<UserSettings, 'userId'>) =>
     request<UserSettings>(`/api/users/${userId}/settings`, { method: 'PUT', body: JSON.stringify(settings) }),
