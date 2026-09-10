@@ -12,6 +12,8 @@ public class RecommendationHistory {
     private Long userId;
     @Column(nullable = false)
     private String mode;
+    @Column(name = "generation_source", nullable = false)
+    private String generationSource = "unknown";
     private String situation;
     @Column(name = "source_intent", columnDefinition = "text")
     private String sourceIntent;
@@ -27,19 +29,24 @@ public class RecommendationHistory {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     protected RecommendationHistory() {}
-    public RecommendationHistory(Long userId, String mode, String situation, String sourceIntent, String generatedSentence,
+
+    public RecommendationHistory(Long userId, String mode, String generationSource, String situation,
+                                 String sourceIntent, String generatedSentence,
                                  int eojeolCount, int personalWordCount) {
         this.userId = userId;
         this.mode = mode;
+        this.generationSource = generationSource == null || generationSource.isBlank() ? "unknown" : generationSource;
         this.situation = situation;
         this.sourceIntent = sourceIntent;
         this.generatedSentence = generatedSentence;
         this.eojeolCount = eojeolCount;
         this.personalWordCount = personalWordCount;
     }
+
     public Long getId() { return id; }
     public Long getUserId() { return userId; }
     public String getMode() { return mode; }
+    public String getGenerationSource() { return generationSource; }
     public String getSituation() { return situation; }
     public String getSourceIntent() { return sourceIntent; }
     public String getGeneratedSentence() { return generatedSentence; }
