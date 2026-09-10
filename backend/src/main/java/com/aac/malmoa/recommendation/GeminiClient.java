@@ -3,6 +3,7 @@ package com.aac.malmoa.recommendation;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -29,11 +30,17 @@ public class GeminiClient {
         if (apiKey == null || apiKey.isBlank()) return List.of();
         Map<String, Object> body = Map.of(
                 "contents", List.of(Map.of("role", "user", "parts", List.of(Map.of("text", prompt)))),
-                "generationConfig", Map.of("temperature", 0.35, "responseMimeType", "application/json")
+                "generationConfig", Map.of(
+                        "temperature", 0.35,
+                        "candidateCount", 1,
+                        "responseMimeType", "application/json"
+                )
         );
         try {
             String raw = restClient.post()
-                    .uri(uri -> uri.path("/models/{model}:generateContent").queryParam("key", apiKey).build(model))
+                    .uri("/models/{model}:generateContent", model)
+                    .header("x-goog-api-key", apiKey)
+                    .contentType(MediaType.APPLICATION_JSON)
                     .body(body)
                     .retrieve()
                     .body(String.class);
