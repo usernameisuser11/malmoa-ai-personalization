@@ -3,6 +3,7 @@ import type {
   CommunicationProfile,
   Comparison,
   CurrentPairing,
+  GeminiProbe,
   GuardianNotification,
   PairedDevice,
   PairingClaim,
@@ -39,6 +40,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   readiness: () => request<SystemReadiness>('/api/health/ready'),
+  geminiProbe: () => request<GeminiProbe>('/api/health/gemini'),
   personalizationContext: (userId: number) => request<PersonalizationContext>(`/api/users/${userId}/personalization-context`),
   getUserSettings: (userId: number) => request<UserSettings>(`/api/users/${userId}/settings`),
   saveUserSettings: (userId: number, settings: Omit<UserSettings, 'userId'>) =>
