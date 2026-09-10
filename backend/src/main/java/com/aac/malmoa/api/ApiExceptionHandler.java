@@ -20,8 +20,14 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})
-    public ResponseEntity<Map<String, Object>> badRequest(Exception ignored) {
+    public ResponseEntity<Map<String, Object>> validation(Exception ignored) {
         return error(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "입력값을 확인해주세요.");
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> illegalArgument(IllegalArgumentException e) {
+        String message = e.getMessage() == null || e.getMessage().isBlank() ? "입력값을 확인해주세요." : e.getMessage();
+        return error(HttpStatus.BAD_REQUEST, "BAD_REQUEST", message);
     }
 
     @ExceptionHandler(ResponseStatusException.class)
