@@ -1,0 +1,649 @@
+/*
+ * Personalization lab visual bridge to the authoritative Yeseo handoff.
+ * Source: SMU-SENSE/frontend guardian DESIGN_SOURCE.md + yeoseo-source.css
+ * + measured onboarding/connect CSS on feature/dongseok.
+ *
+ * Keep experimental functionality, but do not invent a separate visual system.
+ */
+:root {
+  --figma-green: #149e69;
+  --figma-green-hover: #0f7a52;
+  --figma-green-pressed: #0a6140;
+  --figma-green-light: #e6f7f1;
+  --figma-navy: #06054f;
+  --figma-gray-100: #f0f0f4;
+  --figma-gray-200: #e5e4ea;
+  --figma-gray-300: #cfced7;
+  --figma-gray-400: #b9b8c4;
+  --figma-gray-500: #a3a2b0;
+  --figma-gray-600: #77768a;
+  --figma-red: #e53e3e;
+  --figma-red-light: #fce7e7;
+  --figma-yellow: #fee500;
+  --navy: var(--figma-navy);
+  --green: var(--figma-green);
+  --green-dark: var(--figma-green-hover);
+  --light-green: var(--figma-green-light);
+  --gray-100: var(--figma-gray-100);
+  --gray-300: var(--figma-gray-300);
+  --gray-500: var(--figma-gray-500);
+  --danger: var(--figma-red);
+  --yeoseo-speaker: url('https://raw.githubusercontent.com/SMU-SENSE/frontend/0a5705e6319ec79b08ce0463d732510c8403b12d/guardian/public/design/yeoseo/icon/speaker.png');
+  --yeoseo-play-sm: url('https://raw.githubusercontent.com/SMU-SENSE/frontend/0a5705e6319ec79b08ce0463d732510c8403b12d/guardian/public/design/yeoseo/icon/play-sm.png');
+  --yeoseo-link: url('https://raw.githubusercontent.com/SMU-SENSE/frontend/0a5705e6319ec79b08ce0463d732510c8403b12d/guardian/public/design/yeoseo/icon/link.png');
+  --yeoseo-check: url('https://raw.githubusercontent.com/SMU-SENSE/frontend/0a5705e6319ec79b08ce0463d732510c8403b12d/guardian/public/design/yeoseo/icon/check.png');
+}
+
+html, body {
+  background: #fbfcfb;
+  color: var(--figma-navy);
+}
+
+body {
+  letter-spacing: -0.01em;
+}
+
+/* Shared header: restrained, white, and based on the guardian source palette. */
+.topbar {
+  min-height: 64px;
+  padding: 0 32px;
+  background: #fff;
+  border-bottom: 1px solid var(--figma-gray-100);
+  box-shadow: none;
+}
+.topbar > a {
+  color: var(--figma-green);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.topbar .navs {
+  gap: 2px;
+}
+.nav-pill {
+  padding: 10px 12px;
+  color: var(--figma-gray-600) !important;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700 !important;
+}
+.nav-pill:hover {
+  color: var(--figma-green) !important;
+  background: var(--figma-green-light);
+}
+
+/* Home: remove the separate 'AI lab' visual language and look like a Malmoa entry screen. */
+.landing {
+  min-height: calc(100vh - 1px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  background: #fbfcfb;
+}
+.hero-card {
+  width: min(100%, 720px);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  color: var(--figma-green);
+  background: transparent;
+  border-radius: 0;
+  font-size: 14px;
+  font-weight: 800;
+}
+.hero-card h1 {
+  margin: 18px 0 12px;
+  color: var(--figma-navy);
+  font-size: clamp(32px, 5vw, 42px);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.045em;
+}
+.hero-card > p {
+  max-width: 620px;
+  margin: 0;
+  color: var(--figma-gray-600);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.role-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 32px;
+}
+.role-card {
+  min-height: 164px;
+  align-content: start;
+  gap: 10px;
+  padding: 20px;
+  color: var(--figma-navy);
+  background: #fff;
+  border: 1px solid var(--figma-gray-200);
+  border-radius: 12px;
+  box-shadow: none;
+}
+.role-card:hover {
+  transform: none;
+  border-color: var(--figma-green);
+  background: #fff;
+}
+.role-card svg {
+  color: var(--figma-green);
+}
+.role-card strong {
+  font-size: 17px;
+  font-weight: 700;
+}
+.role-card span {
+  color: var(--figma-gray-600);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.caption {
+  margin-top: 20px !important;
+  color: var(--figma-gray-500) !important;
+  font-size: 12px !important;
+}
+
+/* Main pages use the same measured 480/520px onboarding visual rhythm, widened only where the lab needs data density. */
+.page {
+  width: min(1040px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 48px 0 80px;
+}
+.page-title {
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+.page-title h1 {
+  color: var(--figma-navy);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.04em;
+}
+.page-title p {
+  margin-top: 8px;
+  color: var(--figma-gray-500);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.panel {
+  padding: 24px;
+  margin-bottom: 16px;
+  background: #fff;
+  border: 1px solid var(--figma-gray-200);
+  border-radius: 12px;
+  box-shadow: none;
+}
+.panel h2 {
+  color: var(--figma-navy);
+  font-size: 20px;
+  font-weight: 700;
+}
+.panel-desc {
+  margin: 8px 0 22px;
+  color: var(--figma-gray-500);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* Inputs follow Yeseo's profile field geometry. */
+.form-grid {
+  gap: 16px;
+}
+.field {
+  gap: 8px;
+}
+.field label {
+  color: var(--figma-navy);
+  font-size: 14px;
+  font-weight: 700;
+}
+.field input,
+.field select,
+.field textarea {
+  min-height: 44px;
+  padding: 0 14px;
+  color: var(--figma-navy);
+  background: var(--figma-gray-100);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: none;
+}
+.field textarea {
+  min-height: 88px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  background: #fff;
+  border-color: var(--figma-green);
+  box-shadow: none;
+}
+.field input:disabled {
+  color: var(--figma-gray-500);
+  background: #f5f5f7;
+}
+.field input[type='range'] {
+  min-height: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  accent-color: var(--figma-green);
+}
+
+.primary,
+.secondary {
+  min-height: 44px;
+  border-radius: 8px;
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 700;
+}
+.primary {
+  color: #fff;
+  background: var(--figma-green);
+  border: 1px solid var(--figma-green);
+}
+.primary:hover:not(:disabled) {
+  background: var(--figma-green-hover);
+  border-color: var(--figma-green-hover);
+}
+.primary:active:not(:disabled) {
+  background: var(--figma-green-pressed);
+  border-color: var(--figma-green-pressed);
+}
+.secondary {
+  color: var(--figma-green);
+  background: #fff;
+  border: 1px solid var(--figma-green);
+}
+.secondary:hover:not(:disabled) {
+  background: var(--figma-green-light);
+}
+.actions {
+  gap: 8px;
+  margin-top: 20px;
+}
+.status {
+  color: var(--figma-green);
+}
+.small {
+  color: var(--figma-gray-600);
+}
+
+/* Presets and filters should read like normal Malmoa controls, not AI product cards. */
+.preset-grid {
+  gap: 8px;
+}
+.preset-card {
+  min-height: 64px;
+  padding: 12px 14px;
+  color: var(--figma-navy);
+  background: var(--figma-gray-100);
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+.preset-card:hover {
+  color: var(--figma-green);
+  background: #fff;
+  border-color: var(--figma-green);
+}
+.preset-card span {
+  color: var(--figma-gray-500);
+}
+.category-tabs {
+  gap: 6px;
+}
+.category-tab {
+  min-height: 36px;
+  padding: 0 13px;
+  color: var(--figma-navy);
+  background: var(--figma-gray-100);
+  border: 0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.category-tab.active {
+  color: #fff;
+  background: var(--figma-green);
+  border: 0;
+}
+.check-row {
+  gap: 8px;
+  padding: 10px 0;
+  color: var(--figma-navy);
+  font-size: 14px;
+}
+.check-row input[type='checkbox'] {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--figma-green);
+}
+
+/* Symbol management and AAC cards. */
+.edit-layout {
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 16px;
+}
+.list {
+  gap: 6px;
+}
+.list-item {
+  padding: 12px 14px;
+  color: var(--figma-navy);
+  background: var(--figma-gray-100);
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+.list-item.active {
+  color: var(--figma-navy);
+  background: #fff;
+  border: 2px solid var(--figma-green);
+}
+.custom-image-preview {
+  border-color: var(--figma-gray-300);
+  border-radius: 12px;
+  background: var(--figma-gray-100);
+}
+.symbol-grid {
+  gap: 12px;
+}
+.symbol-card {
+  min-height: 126px;
+  padding: 14px 10px;
+  color: var(--figma-navy);
+  border: 1px solid var(--figma-gray-200);
+  border-radius: 12px;
+  box-shadow: none;
+}
+.symbol-card.selected {
+  border: 2px solid var(--figma-green);
+  outline: 0;
+}
+.symbol-card .symbol-name {
+  font-size: 16px;
+  font-weight: 700;
+}
+.symbol-card .symbol-meta {
+  color: var(--figma-gray-600);
+}
+.symbol-image {
+  border-radius: 8px;
+}
+.selected-strip {
+  min-height: 52px;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: var(--figma-gray-100);
+  border: 0;
+  border-radius: 8px;
+}
+.token {
+  padding: 7px 10px;
+  color: var(--figma-green);
+  background: #fff;
+  border: 1px solid #cdeedd;
+  border-radius: 8px;
+}
+
+/* Experiment result area keeps data visible while matching the white/green source system. */
+.comparison-stats {
+  gap: 12px;
+}
+.stats-column,
+.result-column {
+  background: #fff;
+  border: 1px solid var(--figma-gray-200);
+  border-radius: 12px;
+}
+.stats-column.personalized,
+.result-column.personalized {
+  background: #fff;
+  border: 2px solid var(--figma-green);
+}
+.candidate {
+  padding: 14px;
+  color: var(--figma-navy);
+  background: var(--figma-gray-100);
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+.candidate:hover {
+  background: #fff;
+  border-color: var(--figma-green);
+}
+
+/* Emergency retains its semantic red but uses source-state geometry. */
+.emergency-toggle {
+  min-height: 44px;
+  padding: 0 14px;
+  color: var(--figma-red);
+  background: #fff;
+  border: 1px solid var(--figma-red);
+  border-radius: 8px;
+}
+.emergency-panel {
+  background: #fff;
+  border: 2px solid #ff8587;
+}
+.emergency-button {
+  min-height: 112px;
+  padding: 16px 12px;
+  color: var(--figma-navy);
+  background: #fff4f4;
+  border: 1px solid #ffbabb;
+  border-radius: 12px;
+}
+.error {
+  color: var(--figma-red);
+  background: var(--figma-red-light);
+  border: 1px solid #f2bbbb;
+  border-radius: 8px;
+}
+.success-box {
+  color: var(--figma-green);
+  background: var(--figma-green-light);
+  border: 1px solid #cdeedd;
+  border-radius: 8px;
+}
+.notification-item {
+  color: var(--figma-navy);
+  background: var(--figma-gray-100);
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+.notification-item:not(.read) {
+  background: #fff;
+  border-color: var(--figma-green);
+}
+
+/* Device connection: reuse the measured 480px Yeseo connection system. */
+.pairing-grid {
+  grid-template-columns: repeat(2, minmax(0, 480px));
+  justify-content: center;
+  gap: 20px;
+}
+.pairing-grid > .panel {
+  width: 100%;
+  max-width: 480px;
+  padding: 24px;
+}
+.pairing-grid > .panel h2 {
+  justify-content: center;
+  text-align: center;
+  font-size: 21px;
+}
+.pairing-grid > .panel .panel-desc {
+  text-align: center;
+}
+.pairing-credential {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  gap: 18px;
+  margin-top: 20px;
+  padding: 20px 24px;
+  text-align: center;
+  background: var(--figma-gray-100);
+  border: 0;
+  border-radius: 16px;
+}
+.qr-box {
+  width: 260px;
+  height: 260px;
+  padding: 12px;
+  background: #fff;
+  border: 2px solid var(--figma-green);
+  border-radius: 12px;
+}
+.pairing-code {
+  margin: 7px 0 12px;
+  color: var(--figma-navy);
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: 8px;
+}
+.pairing-timer {
+  color: var(--figma-green);
+}
+.code-input {
+  height: 64px !important;
+  color: var(--figma-navy) !important;
+  background: var(--figma-gray-100) !important;
+  border-radius: 12px !important;
+  font-size: 32px !important;
+  font-weight: 700 !important;
+}
+.connect-submit {
+  min-height: 52px;
+  margin-top: 20px;
+}
+.token-ready,
+.claim-result {
+  color: var(--figma-green);
+  background: var(--figma-green-light);
+  border: 1px solid #cdeedd;
+  border-radius: 12px;
+}
+.device-item {
+  background: #fff;
+  border-color: var(--figma-gray-200);
+  border-radius: 8px;
+}
+
+/* Context/status cards no longer float as a separate dashboard aesthetic. */
+.context-card {
+  border-color: var(--figma-gray-200);
+  border-radius: 12px;
+  box-shadow: none;
+}
+.context-main-card {
+  background: #fff;
+  border: 2px solid var(--figma-green);
+}
+.word-chip,
+.usage-row {
+  border-radius: 8px;
+}
+
+@media (max-width: 900px) {
+  .role-grid,
+  .pairing-grid {
+    grid-template-columns: 1fr;
+  }
+  .pairing-grid > .panel {
+    max-width: 560px;
+    justify-self: center;
+  }
+}
+
+@media (max-width: 800px) {
+  .page {
+    width: min(100% - 32px, 720px);
+    padding: 32px 0 64px;
+  }
+  .panel {
+    padding: 20px;
+  }
+  .edit-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    min-height: 56px;
+    padding: 0 16px;
+    align-items: center;
+    flex-direction: row;
+    gap: 12px;
+  }
+  .topbar .navs {
+    width: auto;
+    flex: 1;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .topbar .navs::-webkit-scrollbar { display: none; }
+  .nav-pill {
+    flex: 0 0 auto;
+    padding: 8px 9px;
+    font-size: 12px;
+  }
+  .landing {
+    align-items: flex-start;
+    padding: 64px 20px 40px;
+  }
+  .role-grid {
+    grid-template-columns: 1fr;
+    margin-top: 26px;
+  }
+  .role-card {
+    min-height: 0;
+  }
+  .page-title {
+    gap: 12px;
+  }
+  .page-title h1 {
+    font-size: 27px;
+  }
+  .preset-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .qr-box {
+    width: min(260px, calc(100vw - 96px));
+    height: auto;
+    aspect-ratio: 1;
+  }
+}
+
+@media (max-width: 430px) {
+  .page {
+    width: calc(100% - 24px);
+  }
+  .panel {
+    padding: 18px 16px;
+  }
+  .preset-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
