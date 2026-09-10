@@ -152,6 +152,8 @@ export function AacLab({ userId = 1 }: { userId?: number }) {
 
   if (loading) return <main className="page"><p className="loading">AAC 데이터를 불러오는 중...</p></main>;
 
+  const fallbackUsed = comparison && (comparison.baseline.source === 'fallback' || comparison.personalized.source === 'fallback');
+
   return (
     <main className="page">
       <div className="page-title">
@@ -204,6 +206,7 @@ export function AacLab({ userId = 1 }: { userId?: number }) {
         <section className="panel">
           <h2>3. 추천 결과 비교</h2>
           <p className="panel-desc">실제로 사용하고 싶은 문장을 눌러 선택률을 기록합니다. 개인화 결과는 길이 위반 시 재생성을 시도합니다.</p>
+          {fallbackUsed && <p className="fallback-notice"><AlertTriangle size={16}/> 일부 결과가 Gemini가 아니라 안전한 로컬 fallback으로 생성되었습니다. Render의 API 키와 모델 설정을 확인해주세요.</p>}
           <div className="two-col"><Result title="일반 AI" result={comparison.baseline} onChoose={sentence => void choose('baseline', sentence)}/><Result title="말모아 개인화 AI" result={comparison.personalized} personalized onChoose={sentence => void choose('personalized', sentence)}/></div>
         </section>
       )}
@@ -216,7 +219,8 @@ function CardVisual({ symbol }: { symbol: AacSymbol }) {
 }
 
 function Result({ title, result, personalized = false, onChoose }: { title: string; result: Comparison['baseline']; personalized?: boolean; onChoose: (sentence: string) => void }) {
-  return <div className={`result-column ${personalized ? 'personalized' : ''}`}><h3><span>{title}</span>{personalized && <Sparkles size={18}/>}</h3>{personalized && <p className="small">최대 {result.maxEojeol}어절 · 개인 어휘: {result.personalWords.length ? result.personalWords.slice(0, 8).join(', ') : '아직 없음'}</p>}{result.candidates.map((candidate, index) => <button key={`${candidate.sentence}-${index}`} className="candidate" onClick={() => onChoose(candidate.sentence)}><strong>{candidate.sentence}</strong><div className="metrics"><span>{candidate.eojeolCount}어절</span>{personalized && <span>개인어휘 {candidate.personalWordCount}개</span>}<span className={candidate.valid ? 'metric-ok' : 'metric-bad'}>{candidate.valid ? '조건 통과' : candidate.violations.join(', ')}</span><span><Volume2 size={12}/> 선택·말하기</span></div></button>)}</div>;
+  const sourceLabel = result.source === 'gemini' ? 'Gemini 실시간' : 'Fallback';
+  return <div className={`result-column ${personalized ? 'personalized' : ''}`}><h3><span>{title}</span><span className={`ai-source ${result.source}`}>{personalized && <Sparkles size={14}/>} {sourceLabel}</span></h3>{personalized && <p className="small">최대 {result.maxEojeol}어절 · 개인 어휘: {result.personalWords.length ? result.personalWords.slice(0, 8).join(', ') : '아직 없음'}</p>}{result.candidates.map((candidate, index) => <button key={`${candidate.sentence}-${index}`} className="candidate" onClick={() => onChoose(candidate.sentence)}><strong>{candidate.sentence}</strong><div className="metrics"><span>{candidate.eojeolCount}어절</span>{personalized && <span>개인어휘 {candidate.personalWordCount}개</span>}<span className={candidate.valid ? 'metric-ok' : 'metric-bad'}>{candidate.valid ? '조건 통과' : candidate.violations.join(', ')}</span><span><Volume2 size={12}/> 선택·말하기</span></div></button>)}</div>;
 }
 
 function StatsColumn({ title, stats, personalized = false }: { title: string; stats: RecommendationStats['baseline']; personalized?: boolean }) {
