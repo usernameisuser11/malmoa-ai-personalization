@@ -26,8 +26,16 @@ public class GeminiClient {
         this.model = model;
     }
 
+    public boolean isConfigured() {
+        return apiKey != null && !apiKey.isBlank() && model != null && !model.isBlank();
+    }
+
+    public String model() {
+        return model;
+    }
+
     public List<String> generateSentences(String prompt) {
-        if (apiKey == null || apiKey.isBlank()) return List.of();
+        if (!isConfigured()) return List.of();
         Map<String, Object> body = Map.of(
                 "contents", List.of(Map.of("role", "user", "parts", List.of(Map.of("text", prompt)))),
                 "generationConfig", Map.of(
