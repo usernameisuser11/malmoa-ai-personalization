@@ -4,6 +4,7 @@ import './result-status.css';
 import './context.css';
 import './yeoseo-lab.css';
 import './yeoseo-guardian.css';
+import './malmoa2.css';
 
 export const metadata: Metadata = {
   title: '말모아',
