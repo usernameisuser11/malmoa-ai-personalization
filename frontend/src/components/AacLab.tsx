@@ -2,24 +2,42 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, RefreshCcw, RotateCcw, Sparkles, Volume2, X } from 'lucide-react';
+import {
+  AlertTriangle,
+  Clock3,
+  Hand,
+  MapPin,
+  MessageCircle,
+  PersonStanding,
+  Plus,
+  RefreshCcw,
+  RotateCcw,
+  Smile,
+  Sparkles,
+  Star,
+  Type,
+  UserRound,
+  Utensils,
+  Volume2,
+  X,
+} from 'lucide-react';
 import { api } from '@/lib/api';
 import type { AacSymbol, Comparison, UserSettings } from '@/types';
 
 const CATEGORY_ITEMS = [
-  { key: '추천', icon: '✨' },
-  { key: '최근', icon: '◷' },
-  { key: '즐겨찾기', icon: '★' },
-  { key: '긴급어', icon: '⚠' },
-  { key: '사람', icon: '🧍' },
-  { key: '음식', icon: '🍚' },
-  { key: '장소', icon: '⌖' },
-  { key: '신체', icon: '◉' },
-  { key: '행동', icon: '🏃' },
-  { key: '감정', icon: '☺' },
-  { key: '설명', icon: '한' },
-  { key: '대화', icon: '💬' },
-  { key: '문법', icon: '＋' },
+  { key: '추천', icon: Sparkles },
+  { key: '최근', icon: Clock3 },
+  { key: '즐겨찾기', icon: Star },
+  { key: '긴급어', icon: AlertTriangle },
+  { key: '사람', icon: UserRound },
+  { key: '음식', icon: Utensils },
+  { key: '장소', icon: MapPin },
+  { key: '신체', icon: Hand },
+  { key: '행동', icon: PersonStanding },
+  { key: '감정', icon: Smile },
+  { key: '설명', icon: Type },
+  { key: '대화', icon: MessageCircle },
+  { key: '문법', icon: Plus },
 ] as const;
 
 const QUICK_RESPONSES = ['네', '아니요', '잠깐만요', '몰라요', '뭐예요'];
@@ -202,17 +220,20 @@ export function AacLab({ userId = 1 }: { userId?: number }) {
 
       <div className="m2-aac__workspace">
         <aside className="m2-category-rail" aria-label="AAC 카테고리">
-          {CATEGORY_ITEMS.map(item => (
-            <button
-              type="button"
-              key={item.key}
-              className={category === item.key ? `m2-category is-active m2-category--${item.key}` : `m2-category m2-category--${item.key}`}
-              onClick={() => setCategory(item.key)}
-            >
-              <span aria-hidden="true">{item.icon}</span>
-              <strong>{item.key}</strong>
-            </button>
-          ))}
+          {CATEGORY_ITEMS.map(item => {
+            const Icon = item.icon;
+            return (
+              <button
+                type="button"
+                key={item.key}
+                className={category === item.key ? `m2-category is-active m2-category--${item.key}` : `m2-category m2-category--${item.key}`}
+                onClick={() => setCategory(item.key)}
+              >
+                <Icon size={16} strokeWidth={2.2} aria-hidden="true"/>
+                <strong>{item.key}</strong>
+              </button>
+            );
+          })}
         </aside>
 
         <section className="m2-symbol-area" aria-label={`${category} 상징`}>
@@ -244,7 +265,12 @@ export function AacLab({ userId = 1 }: { userId?: number }) {
           ) : (
             <div className="m2-selected-grid">
               {selected.map(symbol => (
-                <button type="button" key={symbol.id} onClick={() => toggle(symbol)}>
+                <button
+                  type="button"
+                  key={symbol.id}
+                  style={{ '--symbol-color': symbol.colorHex } as React.CSSProperties}
+                  onClick={() => toggle(symbol)}
+                >
                   <CardVisual symbol={symbol} compact/>
                   <span>{symbol.userAlias || symbol.displayText}</span>
                 </button>
@@ -267,7 +293,10 @@ export function AacLab({ userId = 1 }: { userId?: number }) {
       {generating ? (
         <div className="m2-modal-backdrop" role="dialog" aria-modal="true" aria-label="AI 추천 문장 생성 중">
           <div className="m2-ai-modal m2-ai-modal--loading">
-            <div className="m2-ai-modal__head"><h2>AI 추천 문장</h2><button type="button" onClick={() => setGenerating(false)}><X size={22}/></button></div>
+            <div className="m2-ai-modal__head">
+              <h2>AI 추천 문장</h2>
+              <button type="button" className="m2-modal-close" aria-label="닫기" onClick={() => setGenerating(false)}><X size={22}/></button>
+            </div>
             <div className="m2-ai-loading"><div className="m2-spinner"/><strong>AI가 문장을 만들고 있어요...</strong></div>
           </div>
         </div>
