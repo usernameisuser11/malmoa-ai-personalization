@@ -7,6 +7,7 @@ import './yeoseo-guardian.css';
 import './malmoa2.css';
 import './guardian-frame.css';
 import './malmoa2-refine.css';
+import './system-pages.css';
 
 export const metadata: Metadata = {
   title: '말모아',
