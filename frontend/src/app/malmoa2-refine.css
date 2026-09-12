@@ -7,46 +7,62 @@
 .m2-button{height:54px;border-radius:9px;font-size:17px}
 .m2-welcome__hint{margin-top:29px;font-size:12px;color:#aaa9b3}
 
+/* 03 홈 레퍼런스: 얇은 헤더 + 좁은 카테고리 레일 + 4열 카드 + 우측 선택 보드 */
 .m2-aac{padding-bottom:54px}
-.m2-aac__header{height:58px;gap:20px;padding:0 16px}
+.m2-aac__header{height:58px;gap:19px;padding:0 15px}
 .m2-logo{font-size:22px}
-.m2-aac__nav{gap:6px}
-.m2-aac__nav a,.m2-aac__nav span{min-width:58px;height:34px;font-size:13px}
-.m2-emergency{height:34px;padding:0 16px;font-size:13px}
-.m2-aac__workspace{height:calc(100vh - 112px);grid-template-columns:68px minmax(0,1fr) 252px}
-.m2-category-rail{padding:7px 5px}
-.m2-category{min-height:48px;margin-bottom:6px;border-radius:10px}
-.m2-category>span{font-size:12px}.m2-category>strong{font-size:9px}
+.m2-aac__nav{gap:5px}
+.m2-aac__nav a,.m2-aac__nav span{min-width:57px;height:34px;font-size:13px}
+.m2-emergency{height:34px;padding:0 16px;font-size:13px;border-radius:999px}
+.m2-aac__workspace{height:calc(100vh - 112px);grid-template-columns:76px minmax(0,1fr) 300px}
+.m2-category-rail{padding:7px 6px;background:#fff}
+.m2-category{min-height:48px;margin-bottom:6px;border-radius:10px;gap:3px}
+.m2-category>svg{width:15px;height:15px}
+.m2-category>strong{font-size:9px;line-height:1.1}
+.m2-category.is-active{outline:0;box-shadow:0 0 0 2px var(--m2-green) inset}
 .m2-symbol-area{padding:10px 11px 72px}
 .m2-limit-banner{margin-bottom:8px;padding:7px 14px;font-size:11px}
 .m2-symbol-grid{gap:9px}
 .m2-symbol-grid--4{grid-template-columns:repeat(4,minmax(108px,1fr))}
-.m2-symbol-card{min-height:138px;gap:9px;padding:11px 7px;border-radius:12px;font-size:15px}
-.m2-placeholder{width:64px;height:64px;border-radius:7px;font-size:30px}
+.m2-symbol-grid--3{grid-template-columns:repeat(3,minmax(132px,1fr))}
+.m2-symbol-grid--2{grid-template-columns:repeat(2,minmax(170px,1fr))}
+.m2-symbol-card{min-height:140px;gap:9px;padding:11px 7px;border-radius:12px;font-size:15px;border-width:1.5px}
+.m2-symbol-card.is-selected{box-shadow:0 0 0 1px color-mix(in srgb,var(--symbol-color) 80%,#fff) inset}
+.m2-placeholder{width:64px;height:64px;border-radius:7px;font-size:30px;background:#eeeeF2;border-color:#c8c8d0;color:#a3a3ae}
 .m2-symbol-image{width:68px;height:68px;border-radius:8px}
-.m2-selection-panel{padding:10px}
-.m2-selection-empty{height:118px;border-radius:12px;font-size:13px}
-.m2-selected-grid{gap:6px;padding:7px;border-radius:12px}
-.m2-selected-grid button{min-height:62px;gap:6px;padding:6px;border-radius:8px;font-size:11px}
-.m2-placeholder.is-compact{width:34px;height:34px;font-size:18px}.m2-symbol-image.is-compact{width:36px;height:36px}
-.m2-aac__tools{right:10px;bottom:59px;gap:6px}
-.m2-tool{height:40px;padding:0 12px;border-radius:8px;font-size:12px}
-.m2-quick-bar{height:54px;gap:6px;padding:6px 12px 6px 74px}
-.m2-quick-bar button{border-radius:8px;font-size:13px}
 
-.m2-modal-backdrop{padding:20px;background:rgba(9,9,18,.38)}
-.m2-ai-modal{width:min(650px,calc(100vw - 36px));border-radius:20px}
-.m2-ai-modal__head{height:68px;padding:0 20px}
-.m2-ai-modal__head h2{font-size:24px}
-.m2-regenerate{height:44px;padding:0 14px;border-radius:9px;font-size:14px}
-.m2-modal-close{width:34px;height:34px}
-.m2-ai-list{gap:11px;padding:15px 18px 6px}
-.m2-ai-candidate{min-height:112px;grid-template-columns:34px minmax(0,1fr) 84px;gap:12px;padding:13px 14px;border-radius:13px;background:#f2f2f6}
-.m2-ai-number{width:34px;height:34px;font-size:17px}
-.m2-ai-candidate>strong{font-size:18px}
-.m2-ai-candidate>button{height:82px;border-radius:12px;font-size:14px}
-.m2-ai-footnote{margin:7px 18px 16px;font-size:11px}
-.m2-ai-loading{height:250px}
+.m2-selection-panel{padding:10px 11px 56px;background:#fff}
+.m2-selection-empty{height:118px;border-radius:12px;font-size:13px;border-color:#9f9eaa}
+.m2-selected-grid{min-height:276px;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:62px;align-content:start;gap:7px;padding:8px;border-radius:13px;border:1.5px solid #9ea0ad;background:#fff}
+.m2-selected-grid button{min-height:62px;gap:7px;padding:6px 7px;border-radius:8px;font-size:11px;border:1.5px solid color-mix(in srgb,var(--symbol-color) 78%,#c9cad2);background:color-mix(in srgb,var(--symbol-color) 7%,#fff);color:var(--m2-navy)}
+.m2-selected-grid button:hover{background:color-mix(in srgb,var(--symbol-color) 13%,#fff)}
+.m2-placeholder.is-compact{width:34px;height:34px;font-size:18px}.m2-symbol-image.is-compact{width:36px;height:36px}
+
+.m2-aac__tools{right:12px;bottom:59px;gap:7px}
+.m2-tool{height:40px;padding:0 12px;border-radius:8px;font-size:12px}
+.m2-tool--reset{background:#f4f4f6;color:#62616d}
+.m2-tool--ai{background:#ffd34d}
+.m2-tool--speak{background:#18a56f}
+.m2-quick-bar{height:54px;gap:6px;padding:6px 12px 6px 82px}
+.m2-quick-bar button{border-radius:8px;font-size:13px;background:#f0f0f4}
+
+/* 09 AI 추천 문장 레퍼런스 */
+.m2-modal-backdrop{padding:20px;background:rgba(14,14,20,.43);backdrop-filter:none}
+.m2-ai-modal{width:min(720px,calc(100vw - 36px));border-radius:20px;box-shadow:0 18px 54px rgba(0,0,0,.18)}
+.m2-ai-modal__head{height:74px;padding:0 22px;border-bottom:1px solid #d9d9e1}
+.m2-ai-modal__head h2{font-size:25px;letter-spacing:-.025em}
+.m2-regenerate{height:45px;padding:0 15px;border-radius:9px;font-size:15px}
+.m2-modal-close{width:36px;height:36px;color:#9f9eaa}
+.m2-ai-list{gap:14px;padding:18px 22px 8px}
+.m2-ai-candidate{min-height:136px;grid-template-columns:38px minmax(0,1fr) 98px;gap:15px;padding:16px 18px;border-radius:15px;background:#f1f1f5;border:1px solid #d8d8e0}
+.m2-ai-number{width:38px;height:38px;font-size:18px;background:#18a56f}
+.m2-ai-candidate>strong{font-size:20px;line-height:1.35}
+.m2-ai-candidate>button{height:94px;border-radius:14px;font-size:15px;background:#18a56f}
+.m2-ai-footnote{margin:8px 22px 18px;font-size:11px}
+.m2-ai-modal--loading{width:min(610px,calc(100vw - 36px))}
+.m2-ai-loading{height:300px;gap:18px}
+.m2-ai-loading strong{font-size:18px}
+.m2-spinner{width:46px;height:46px;border-width:5px}
 
 .m2-connect__center{width:min(405px,100%)}
 .m2-connect__center h1,.m2-guardian-pairing h1{font-size:33px}
@@ -54,8 +70,13 @@
 .m2-code-input-wrap{height:58px}.m2-code-boxes{gap:8px}.m2-code-boxes span{border-radius:8px;font-size:22px}
 .m2-scanner{width:250px;height:250px;border-radius:16px}
 
+@media(max-width:1100px){
+  .m2-aac__workspace{grid-template-columns:70px minmax(0,1fr) 270px}
+  .m2-symbol-grid--4{grid-template-columns:repeat(4,minmax(96px,1fr))}
+}
 @media(max-width:900px){
   .m2-aac__workspace{grid-template-columns:62px minmax(0,1fr)}
+  .m2-selection-panel{display:none}
   .m2-symbol-grid--4{grid-template-columns:repeat(3,minmax(105px,1fr))}
   .m2-quick-bar{padding-left:68px}
 }
@@ -70,6 +91,11 @@
   .m2-symbol-card{min-height:122px}
   .m2-quick-bar{height:56px;padding:6px 5px 6px 60px}.m2-quick-bar button{font-size:10px}
   .m2-aac__tools{left:60px;right:6px;bottom:60px}
+  .m2-ai-modal{width:calc(100vw - 24px);border-radius:17px}
+  .m2-ai-modal__head{height:64px;padding:0 14px}.m2-ai-modal__head h2{font-size:21px}
+  .m2-regenerate{height:40px;padding:0 10px;font-size:12px}
+  .m2-ai-list{padding:12px;gap:9px}
   .m2-ai-candidate{grid-template-columns:30px minmax(0,1fr) 68px;min-height:102px;padding:10px;gap:8px}
-  .m2-ai-candidate>strong{font-size:15px}.m2-ai-candidate>button{height:70px;font-size:12px}
+  .m2-ai-number{width:30px;height:30px;font-size:14px}.m2-ai-candidate>strong{font-size:15px}.m2-ai-candidate>button{height:70px;font-size:12px}
+  .m2-ai-modal--loading{width:calc(100vw - 24px)}.m2-ai-loading{height:250px}
 }
