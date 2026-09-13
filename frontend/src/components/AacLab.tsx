@@ -19,6 +19,7 @@ import {
   UserRound,
   Utensils,
   Volume2,
+  WifiOff,
   X,
 } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -73,11 +74,14 @@ export function AacLab({ userId = 1 }: { userId?: number }) {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [initialLoadFailed, setInitialLoadFailed] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError('');
+    setInitialLoadFailed(false);
     setSettings(defaultSettings(userId));
     setSymbols([]);
     setEmergency([]);
@@ -95,15 +99,15 @@ export function AacLab({ userId = 1 }: { userId?: number }) {
         setSettings(userSettings);
         setSymbols(userSymbols);
         setEmergency(emergencySymbols);
-      } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'AAC 데이터를 불러오지 못했습니다.');
+      } catch {
+        if (!cancelled) setInitialLoadFailed(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
 
     return () => { cancelled = true; };
-  }, [userId]);
+  }, [userId, reloadKey]);
 
   const allNormalSymbols = useMemo(
     () => symbols.filter(symbol => !symbol.emergency),
@@ -205,6 +209,22 @@ export function AacLab({ userId = 1 }: { userId?: number }) {
     );
   }
 
+  if (initialLoadFailed) {
+    return (
+      <main className="m2-system-screen">
+        <section className="m2-system-card" aria-live="assertive">
+          <div className="m2-system-icon m2-system-icon--network" aria-hidden="true">
+            <WifiOff size={38} strokeWidth={2.1}/>
+          </div>
+          <h1>인터넷 연결을 확인해 주세요</h1>
+          <p>네트워크에 연결되지 않았어요.</p>
+          <button type="button" className="m2-system-button m2-system-button--primary" onClick={() => setReloadKey(key => key + 1)}>다시 시도</button>
+          <Link className="m2-system-button m2-system-button--outline" href="/">홈으로</Link>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="m2-aac">
       <header className="m2-aac__header">
@@ -275,6 +295,9 @@ export function AacLab({ userId = 1 }: { userId?: number }) {
                   <span>{symbol.userAlias || symbol.displayText}</span>
                 </button>
               ))}
+              {Array.from({ length: Math.max(0, 3 - selected.length) }, (_, index) => (
+                <div className="m2-selected-slot" aria-hidden="true" key={`empty-slot-${index}`} />
+              ))}
             </div>
           )}
         </aside>
@@ -321,7 +344,6 @@ export function AacLab({ userId = 1 }: { userId?: number }) {
                 </div>
               ))}
             </div>
-            <p className="m2-ai-footnote">사용자 의사소통 수준과 개인 어휘를 반영한 추천 결과예요.</p>
           </div>
         </div>
       ) : null}
