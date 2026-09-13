@@ -36,6 +36,7 @@
 .m2-selected-grid{min-height:276px;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:62px;align-content:start;gap:7px;padding:8px;border-radius:13px;border:1.5px solid #9ea0ad;background:#fff}
 .m2-selected-grid button{min-height:62px;gap:7px;padding:6px 7px;border-radius:8px;font-size:11px;border:1.5px solid color-mix(in srgb,var(--symbol-color) 78%,#c9cad2);background:color-mix(in srgb,var(--symbol-color) 7%,#fff);color:var(--m2-navy)}
 .m2-selected-grid button:hover{background:color-mix(in srgb,var(--symbol-color) 13%,#fff)}
+.m2-selected-slot{min-height:62px;border:1.5px dashed #d9d9e0;border-radius:8px;background:#fafafd}
 .m2-placeholder.is-compact{width:34px;height:34px;font-size:18px}.m2-symbol-image.is-compact{width:36px;height:36px}
 
 .m2-aac__tools{right:12px;bottom:59px;gap:7px}
@@ -53,12 +54,11 @@
 .m2-ai-modal__head h2{font-size:25px;letter-spacing:-.025em}
 .m2-regenerate{height:45px;padding:0 15px;border-radius:9px;font-size:15px}
 .m2-modal-close{width:36px;height:36px;color:#9f9eaa}
-.m2-ai-list{gap:14px;padding:18px 22px 8px}
+.m2-ai-list{gap:14px;padding:18px 22px 20px}
 .m2-ai-candidate{min-height:136px;grid-template-columns:38px minmax(0,1fr) 98px;gap:15px;padding:16px 18px;border-radius:15px;background:#f1f1f5;border:1px solid #d8d8e0}
 .m2-ai-number{width:38px;height:38px;font-size:18px;background:#18a56f}
 .m2-ai-candidate>strong{font-size:20px;line-height:1.35}
 .m2-ai-candidate>button{height:94px;border-radius:14px;font-size:15px;background:#18a56f}
-.m2-ai-footnote{margin:8px 22px 18px;font-size:11px}
 .m2-ai-modal--loading{width:min(610px,calc(100vw - 36px))}
 .m2-ai-loading{height:300px;gap:18px}
 .m2-ai-loading strong{font-size:18px}
