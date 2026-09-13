@@ -1,4 +1,4 @@
-/* SYS-01 / SYS-03 geometry from the uploaded 말모아 (2) references. */
+/* SYS-01 / SYS-02 / SYS-03 geometry from the uploaded 말모아 (2) references. */
 .m2-system-screen{
   min-height:100vh;
   display:grid;
@@ -24,7 +24,8 @@
   border-radius:50%;
 }
 .m2-system-icon--error{background:#ffe7e7;color:#ef5050}
-.m2-system-icon--neutral{background:#f0f0f4;color:#77768a}
+.m2-system-icon--network{background:#e8f3ff;color:#4d8ed6}
+.m2-system-icon--neutral,.m2-system-icon--not-found{background:#f0f0f4;color:#77768a}
 .m2-system-card h1{
   margin:0;
   color:#06054f;
@@ -55,6 +56,7 @@
 .m2-system-button+.m2-system-button{margin-top:10px}
 .m2-system-button--primary{border:0;background:#14a66f;color:#fff}
 .m2-system-button--outline{border:1px solid #dedee6;background:#fff;color:#06054f}
+.m2-system-button:focus-visible{outline:3px solid rgba(20,166,111,.2);outline-offset:2px}
 @media(max-width:640px){
   .m2-system-card{transform:none}
   .m2-system-card h1{font-size:24px}
