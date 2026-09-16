@@ -70,9 +70,29 @@
 .m2-code-input-wrap{height:58px}.m2-code-boxes{gap:8px}.m2-code-boxes span{border-radius:8px;font-size:22px}
 .m2-scanner{width:250px;height:250px;border-radius:16px}
 
+/* 발표·리뷰용 직접 체험 모드. 실제 제품 화면에는 demo query가 없으면 노출되지 않는다. */
+.m2-welcome__demo{display:grid;gap:6px;margin-top:20px;padding-top:18px;border-top:1px solid #ececf1;text-align:center}
+.m2-welcome__demo>span{font-size:11px;font-weight:700;color:#aaa9b3}
+.m2-welcome__demo>a{height:44px;display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid #cfe9df;border-radius:9px;background:#f3fbf8;color:#0b8c5e;font-size:14px;font-weight:900;text-decoration:none}
+.m2-welcome__demo>a:hover{background:#eaf8f2}
+.m2-welcome__demo>a b{font-size:16px}
+.m2-welcome__demo>small{font-size:10px;line-height:1.45;color:#aaa9b3}
+.m2-welcome__demo+.m2-welcome__hint{margin-top:18px}
+.m2-demo-badge{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:999px;background:#eaf8f2;color:#0a8b5d;font-size:9px;font-weight:900;white-space:nowrap}
+.m2-demo-guide{position:relative;display:flex;align-items:center;gap:14px;margin-bottom:9px;padding:10px 38px 10px 13px;border:1px solid #d8ebe4;border-radius:12px;background:#f7fbf9;box-shadow:0 4px 14px rgba(9,96,65,.04)}
+.m2-demo-guide__copy{min-width:190px;display:grid;gap:2px}
+.m2-demo-guide__copy strong{font-size:12px;color:#075b3d}
+.m2-demo-guide__copy span{font-size:9px;line-height:1.4;color:#6f7775}
+.m2-demo-scenarios{display:flex;flex:1;gap:6px;flex-wrap:wrap}
+.m2-demo-scenarios button{min-height:34px;padding:0 10px;border:1px solid #d8e2df;border-radius:8px;background:#fff;color:#3f4745;font-size:10px;font-weight:800}
+.m2-demo-scenarios button:hover{border-color:#18a56f;color:#0b8c5e;background:#f2fbf7}
+.m2-demo-guide__close{position:absolute;right:8px;top:8px;width:28px;height:28px;border:0;border-radius:8px;background:transparent;color:#969c9a;display:grid;place-items:center}
+.m2-demo-guide-open{margin-bottom:8px;padding:7px 11px;border:1px solid #d8ebe4;border-radius:8px;background:#f7fbf9;color:#0b8c5e;font-size:10px;font-weight:800}
+
 @media(max-width:1100px){
   .m2-aac__workspace{grid-template-columns:70px minmax(0,1fr) 270px}
   .m2-symbol-grid--4{grid-template-columns:repeat(4,minmax(96px,1fr))}
+  .m2-demo-guide{align-items:flex-start;flex-direction:column;gap:8px}
 }
 @media(max-width:900px){
   .m2-aac__workspace{grid-template-columns:62px minmax(0,1fr)}
@@ -85,10 +105,14 @@
   .m2-welcome__content h1,.m2-connect__center h1,.m2-guardian-pairing h1{font-size:27px}
   .m2-aac__header{height:56px;padding:0 10px;gap:9px}
   .m2-logo{font-size:19px}.m2-aac__nav a,.m2-aac__nav span{min-width:44px;height:32px;font-size:11px}
+  .m2-demo-badge{display:none}
   .m2-aac__workspace{grid-template-columns:54px minmax(0,1fr)}
   .m2-symbol-area{padding:8px 7px 88px}
   .m2-symbol-grid,.m2-symbol-grid--4,.m2-symbol-grid--3,.m2-symbol-grid--2{grid-template-columns:repeat(2,minmax(96px,1fr));gap:7px}
   .m2-symbol-card{min-height:122px}
+  .m2-demo-guide{padding:10px 34px 10px 10px}
+  .m2-demo-guide__copy{min-width:0}
+  .m2-demo-scenarios{display:grid;width:100%;grid-template-columns:1fr}
   .m2-quick-bar{height:56px;padding:6px 5px 6px 60px}.m2-quick-bar button{font-size:10px}
   .m2-aac__tools{left:60px;right:6px;bottom:60px}
   .m2-ai-modal{width:calc(100vw - 24px);border-radius:17px}
