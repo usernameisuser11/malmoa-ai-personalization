@@ -7,12 +7,12 @@ import './yeoseo-guardian.css';
 import './malmoa2.css';
 import './guardian-frame.css';
 import './malmoa2-refine.css';
+import './guardian-v3.css';
 import './system-pages.css';
-import './demo.css';
 
 export const metadata: Metadata = {
   title: '말모아',
-  description: '사용자 의사소통 수준과 개인 어휘를 반영하는 AAC 실험판',
+  description: '사용자 의사소통 수준과 개인 어휘를 반영하는 AAC 서비스',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
