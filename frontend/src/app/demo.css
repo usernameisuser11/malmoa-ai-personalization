@@ -1,0 +1,39 @@
+.m2-connect-demo-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:26px;
+  margin-bottom:10px;
+  padding:0 10px;
+  border-radius:999px;
+  background:#eaf8f2;
+  color:#0b8c5e;
+  font-size:10px;
+  font-weight:900;
+}
+.m2-demo-connect-note{
+  margin:10px 0 14px!important;
+  padding:9px 11px;
+  border:1px solid #d8ebe4;
+  border-radius:9px;
+  background:#f7fbf9;
+  color:#6f7775!important;
+  font-size:11px!important;
+  line-height:1.45;
+}
+.m2-demo-connect-note b{color:#0b8c5e}
+.m2-demo-next-link{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
+  margin-top:16px;
+  border:1px solid #d8ebe4;
+  border-radius:9px;
+  background:#f7fbf9;
+  color:#0b8c5e;
+  font-size:12px;
+  font-weight:900;
+  text-decoration:none;
+}
+.m2-demo-next-link:hover{background:#edf9f4}
