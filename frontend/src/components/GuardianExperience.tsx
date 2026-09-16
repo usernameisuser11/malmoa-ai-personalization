@@ -5,18 +5,15 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
   BarChart3,
-  Bell,
   ChevronRight,
   Clock3,
   Folder,
   GripVertical,
   Heart,
-  HelpCircle,
   Home,
   ImagePlus,
   Info,
   MapPin,
-  MessageCircle,
   Plus,
   Save,
   Settings,
@@ -33,6 +30,7 @@ import type { AacSymbol, CommunicationProfile, GuardianNotification, Recommendat
 type Screen = 'home' | 'settings' | 'language' | 'categories' | 'location' | 'tts' | 'report';
 type Routine = { id: string; time: string; repeat: '매일' | '요일'; sentence: string; enabled: boolean };
 type Place = { id: string; name: string; type: '집' | '학교' | '병원' | '치료실'; address: string; start: string; end: string };
+type CategoryItem = { key: string; icon: string; color: string; base: boolean };
 
 const CATEGORIES = [
   { key: '긴급어', icon: '🆘', color: '#ffe7e7' },
@@ -412,18 +410,18 @@ function CategoryEditor({ userId, notify }: { userId: number; notify: (message: 
   const [icon, setIcon] = useState('📁');
   const [name, setName] = useState('');
   const [color, setColor] = useState('#16a56d');
-  const [items, setItems] = useState(CATEGORIES.map(item => ({ ...item, base: true })));
+  const [items, setItems] = useState<CategoryItem[]>(CATEGORIES.map(item => ({ ...item, base: true })));
   const icons = ['📁','🌟','❤️','🎯','🎨','🎵','🏃','🍎','🌈','🔥','💎','🦋'];
   const colors = ['#16a56d','#ffd052','#ffa31c','#ff7f83','#7b88f3','#84d4e8','#ffad80','#b7c1bd'];
 
   useEffect(() => {
     const raw = window.localStorage.getItem(storageKey('categories', userId));
-    if (raw) { try { setItems(JSON.parse(raw)); } catch {} }
+    if (raw) { try { setItems(JSON.parse(raw) as CategoryItem[]); } catch {} }
   }, [userId]);
 
   function add() {
     if (!name.trim()) return;
-    const next = [...items, { key: name.trim(), icon, color, base: false }];
+    const next: CategoryItem[] = [...items, { key: name.trim(), icon, color, base: false }];
     setItems(next);
     window.localStorage.setItem(storageKey('categories', userId), JSON.stringify(next));
     setName('');
