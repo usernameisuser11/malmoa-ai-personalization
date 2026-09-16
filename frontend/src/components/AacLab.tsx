@@ -23,13 +23,6 @@ import {
   X,
 } from 'lucide-react';
 import { api } from '@/lib/api';
-import {
-  buildDemoComparison,
-  DEMO_EMERGENCY,
-  DEMO_SCENARIOS,
-  DEMO_SETTINGS,
-  DEMO_SYMBOLS,
-} from '@/lib/demo-data';
 import type { AacSymbol, Comparison, UserSettings } from '@/types';
 
 const CATEGORY_ITEMS = [
@@ -71,7 +64,7 @@ function MalmoaLogo() {
   );
 }
 
-export function AacLab({ userId = 1, demo = false }: { userId?: number; demo?: boolean }) {
+export function AacLab({ userId = 1 }: { userId?: number }) {
   const [settings, setSettings] = useState<UserSettings>(() => defaultSettings(userId));
   const [symbols, setSymbols] = useState<AacSymbol[]>([]);
   const [emergency, setEmergency] = useState<AacSymbol[]>([]);
@@ -83,29 +76,17 @@ export function AacLab({ userId = 1, demo = false }: { userId?: number; demo?: b
   const [error, setError] = useState('');
   const [initialLoadFailed, setInitialLoadFailed] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
-  const [showDemoGuide, setShowDemoGuide] = useState(demo);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError('');
     setInitialLoadFailed(false);
-    setSelected([]);
-    setComparison(null);
-    setCategory('추천');
-
-    if (demo) {
-      setSettings({ ...DEMO_SETTINGS, userId });
-      setSymbols(DEMO_SYMBOLS);
-      setEmergency(DEMO_EMERGENCY);
-      setShowDemoGuide(true);
-      setLoading(false);
-      return () => { cancelled = true; };
-    }
-
     setSettings(defaultSettings(userId));
     setSymbols([]);
     setEmergency([]);
+    setSelected([]);
+    setComparison(null);
 
     (async () => {
       try {
@@ -126,7 +107,7 @@ export function AacLab({ userId = 1, demo = false }: { userId?: number; demo?: b
     })();
 
     return () => { cancelled = true; };
-  }, [userId, reloadKey, demo]);
+  }, [userId, reloadKey]);
 
   const allNormalSymbols = useMemo(
     () => symbols.filter(symbol => !symbol.emergency),
@@ -163,17 +144,6 @@ export function AacLab({ userId = 1, demo = false }: { userId?: number; demo?: b
       : current.length >= 3 ? current : [...current, symbol]);
   }
 
-  function applyScenario(words: readonly string[]) {
-    const matches = words
-      .map(word => symbols.find(symbol => (symbol.userAlias || symbol.displayText) === word || symbol.canonicalText === word))
-      .filter((symbol): symbol is AacSymbol => Boolean(symbol))
-      .slice(0, 3);
-    setSelected(matches);
-    setCategory('추천');
-    setComparison(null);
-    setError('');
-  }
-
   async function generate() {
     if (selected.length === 0) {
       setError('AI 문장을 만들려면 상징을 하나 이상 골라주세요.');
@@ -182,14 +152,6 @@ export function AacLab({ userId = 1, demo = false }: { userId?: number; demo?: b
     setGenerating(true);
     setError('');
     setComparison(null);
-
-    if (demo) {
-      await new Promise(resolve => window.setTimeout(resolve, 650));
-      setComparison(buildDemoComparison(selectedWords));
-      setGenerating(false);
-      return;
-    }
-
     try {
       const result = await api.compare({
         userId,
@@ -214,7 +176,6 @@ export function AacLab({ userId = 1, demo = false }: { userId?: number; demo?: b
       utterance.pitch = settings.voiceType === 'CHILD_FEMALE' ? 1.35 : 1.15;
       window.speechSynthesis.speak(utterance);
     }
-    if (demo) return;
     const usageWords = words.length ? words : sentence.replace(/[.!?]/g, '').split(/\s+/).filter(Boolean);
     try {
       await api.recordUsage(userId, usageWords);
@@ -225,7 +186,6 @@ export function AacLab({ userId = 1, demo = false }: { userId?: number; demo?: b
 
   async function choosePersonalized(sentence: string) {
     await speak(sentence, selectedWords);
-    if (demo) return;
     try {
       await api.markRecommendationSelected(userId, 'personalized', sentence);
     } catch {
@@ -266,10 +226,9 @@ export function AacLab({ userId = 1, demo = false }: { userId?: number; demo?: b
   }
 
   return (
-    <main className={demo ? 'm2-aac is-demo' : 'm2-aac'}>
+    <main className="m2-aac">
       <header className="m2-aac__header">
         <MalmoaLogo />
-        {demo ? <span className="m2-demo-badge">체험 모드</span> : null}
         <nav className="m2-aac__nav" aria-label="사용자 메뉴">
           <span className="is-active">홈</span>
           <Link href={`/guardian?userId=${userId}`}>설정</Link>
@@ -298,21 +257,6 @@ export function AacLab({ userId = 1, demo = false }: { userId?: number; demo?: b
         </aside>
 
         <section className="m2-symbol-area" aria-label={`${category} 상징`}>
-          {demo && showDemoGuide ? (
-            <div className="m2-demo-guide">
-              <div className="m2-demo-guide__copy">
-                <strong>직접 AAC를 체험해 보세요</strong>
-                <span>상징을 1~3개 고른 뒤 AI 변환을 누르고, 추천 문장을 실제 음성으로 들어보세요.</span>
-              </div>
-              <div className="m2-demo-scenarios" aria-label="체험 예시">
-                {DEMO_SCENARIOS.map(scenario => (
-                  <button type="button" key={scenario.label} onClick={() => applyScenario(scenario.words)}>{scenario.label}</button>
-                ))}
-              </div>
-              <button type="button" className="m2-demo-guide__close" aria-label="체험 안내 닫기" onClick={() => setShowDemoGuide(false)}><X size={17}/></button>
-            </div>
-          ) : null}
-          {demo && !showDemoGuide ? <button type="button" className="m2-demo-guide-open" onClick={() => setShowDemoGuide(true)}>체험 안내 보기</button> : null}
           {selected.length > 0 ? <div className="m2-limit-banner">⚠ 상징은 최대 3개까지 선택할 수 있어요</div> : null}
           <div className={`m2-symbol-grid m2-symbol-grid--${columns}`}>
             {filtered.length === 0 ? (
