@@ -10,12 +10,6 @@ export default function Home() {
           <Link className="m2-button m2-button--primary" href="/connect?mode=code">초대 코드로 연결</Link>
           <Link className="m2-button m2-button--outline" href="/connect?mode=qr">QR로 스캔</Link>
         </div>
-        <div className="m2-welcome__demo">
-          <span>아직 연결 전이라면 먼저 둘러보세요</span>
-          <Link href="/aac?demo=1">AAC 프로토타입 바로 체험 <b>→</b></Link>
-          <Link href="/connect?mode=guardian&demo=1">보호자 ↔ 사용자 연결 과정 체험 <b>→</b></Link>
-          <small>체험 모드는 백엔드 없이도 상징 선택 · AI 문장 추천 · 음성 출력과 연결 흐름을 직접 눌러볼 수 있어요.</small>
-        </div>
         <span className="m2-welcome__hint">보호자 앱에서 초대 코드나 QR을 받아 주세요</span>
       </section>
     </main>
